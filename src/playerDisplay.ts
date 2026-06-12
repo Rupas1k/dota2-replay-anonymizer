@@ -1,5 +1,5 @@
 import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "./types";
-import { isSourceTvPlayer, playerSlotValue } from "./utils";
+import { playerSlotValue } from "./utils";
 
 export type PlayerTeamKind = "radiant" | "dire" | "neutral";
 
@@ -14,7 +14,6 @@ export type PlayerGroups = {
   spectators: ReplayPlayer[];
 };
 
-const sourceTvHero: HeroDisplay = { name: "SourceTV" };
 const spectatorHero: HeroDisplay = { name: "Spectator" };
 
 export const normalizePlayerName = (name: string) => name.trim().replace(/\s+/g, " ").toLowerCase();
@@ -46,10 +45,6 @@ export function heroForPlayer(
   player: ReplayPlayer,
   heroesById: Record<number, HeroLookup>,
 ): HeroDisplay {
-  if (isSourceTvPlayer(player)) {
-    return sourceTvHero;
-  }
-
   const hero = heroesById[player.hero_id];
   if (hero) {
     return {
@@ -70,7 +65,7 @@ export function heroImageUrl(hero: HeroDisplay) {
 }
 
 export function steamProfileUrl(player: ReplayPlayer) {
-  if (isSourceTvPlayer(player) || !player.steam_id || player.steam_id === "0") {
+  if (!player.steam_id || player.steam_id === "0") {
     return null;
   }
 

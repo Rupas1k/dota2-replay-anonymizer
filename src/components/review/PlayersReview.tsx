@@ -16,7 +16,7 @@ import {
   type HeroDisplay,
   type PlayerTeamKind,
 } from "../../playerDisplay";
-import { defaultPlayerName, isLockedPlayer, isSourceTvPlayer, playerKey } from "../../utils";
+import { defaultPlayerName, isLockedPlayer, playerKey } from "../../utils";
 
 function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {
   return (
@@ -63,9 +63,9 @@ function PlayerCard({
   onUpdate: (key: string, patch: Partial<PlayerState>) => void;
 }) {
   const playerName = defaultPlayerName(player);
-  const sourceTv = isSourceTvPlayer(player);
   const locked = isLockedPlayer(player);
   const proLabel = proPlayerLabel(profile);
+  const cardClassName = `player-card is-${team}${locked ? " is-locked-player" : ""}${proLabel ? " is-pro" : ""}`;
   const proNameMatchesReplayName =
     profile?.proName && normalizePlayerName(profile.proName) === normalizePlayerName(playerName);
   const togglePlayer = () => {
@@ -93,11 +93,7 @@ function PlayerCard({
 
   return (
     <article
-      className={`player-card is-${team}${locked ? " is-locked-player" : ""}${
-        sourceTv ? " is-source-tv" : ""
-      }${
-        proLabel ? " is-pro" : ""
-      }`}
+      className={cardClassName}
       tabIndex={locked ? undefined : 0}
       role="checkbox"
       aria-checked={playerState.anonymize}
@@ -234,7 +230,7 @@ export function PlayersReview({
           playerProfiles={playerProfiles}
           playerState={playerState}
           team="neutral"
-          title="Spectators and SourceTV"
+          title="Spectators"
           onUpdate={onUpdate}
         />
       </div>

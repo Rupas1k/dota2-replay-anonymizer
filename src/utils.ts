@@ -1,6 +1,5 @@
 import type { ReplayPlayer } from "./types";
 
-const sourceTvIdThreshold = 90000000000000000n;
 const steamId64Base = 76561197960265728n;
 
 export const formatBytes = (bytes: number) => {
@@ -34,32 +33,13 @@ export const playerSlotValue = (player: ReplayPlayer) => player.slot ?? playerId
 export const defaultPlayerName = (player: ReplayPlayer) =>
   player.name || `Player ${playerIdValue(player)}`;
 
-const isSourceTvName = (name: string) => name.replace(/[\s_-]+/g, "").toLowerCase().includes("sourcetv");
-
 export const playerKey = (player: ReplayPlayer) =>
   player.player_id == null
     ? `userinfo:${playerSlotValue(player)}:${player.steam_id}`
     : `player:${player.player_id}`;
 
-export const isSourceTvPlayer = (player: ReplayPlayer) => {
-  if (player.team_num === 1 && playerSlotValue(player) === 0) {
-    return true;
-  }
-
-  if (isSourceTvName(player.name)) {
-    return true;
-  }
-
-  try {
-    const steamId = BigInt(player.steam_id);
-    return steamId > sourceTvIdThreshold;
-  } catch {
-    return false;
-  }
-};
-
 export const isLockedPlayer = (player: ReplayPlayer) => {
-  return isSourceTvPlayer(player) || player.steam_id === "0";
+  return player.steam_id === "0";
 };
 
 export const steamIdToAccountId = (steamId: string) => {

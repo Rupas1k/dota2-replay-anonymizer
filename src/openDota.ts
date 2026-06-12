@@ -1,5 +1,5 @@
 import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "./types";
-import { isSourceTvPlayer, openDotaAccountIdForPlayer } from "./utils";
+import { openDotaAccountIdForPlayer } from "./utils";
 
 type OpenDotaProPlayerResponse = {
   account_id?: unknown;
@@ -301,10 +301,6 @@ export async function findOpenDotaProProfiles(
   const profiles: Array<[string, PlayerProfileLookup]> = [];
 
   for (const player of players) {
-    if (isSourceTvPlayer(player)) {
-      continue;
-    }
-
     const accountId = openDotaAccountIdForPlayer(player);
     if (!accountId) {
       continue;
