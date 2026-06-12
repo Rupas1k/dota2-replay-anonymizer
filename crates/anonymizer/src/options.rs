@@ -35,6 +35,7 @@ pub struct AnonymizeOptions {
 }
 
 pub trait AnonymizeRules {
+    fn should_anonymize_unmatched_player(&self) -> bool;
     fn should_anonymize_player_id(&self, player_id: i32) -> bool;
     fn should_anonymize_steam_id(&self, steam_id: u64) -> bool;
     fn replacement_name_for_player_id(&self, player_id: i32) -> &str;
@@ -103,6 +104,10 @@ impl Default for AnonymizeOptions {
 }
 
 impl AnonymizeOptions {
+    fn has_player_selection(&self) -> bool {
+        !self.players.is_empty()
+    }
+
     fn player_by_player_id(&self, player_id: i32) -> Option<&PlayerOption> {
         self.players
             .iter()
@@ -117,10 +122,14 @@ impl AnonymizeOptions {
 }
 
 impl AnonymizeRules for AnonymizeOptions {
+    fn should_anonymize_unmatched_player(&self) -> bool {
+        !self.has_player_selection()
+    }
+
     fn should_anonymize_player_id(&self, player_id: i32) -> bool {
         self.player_by_player_id(player_id)
             .map(PlayerOption::should_anonymize)
-            .unwrap_or(true)
+            .unwrap_or_else(|| !self.has_player_selection())
     }
 
     fn should_anonymize_steam_id(&self, steam_id: u64) -> bool {
@@ -130,7 +139,7 @@ impl AnonymizeRules for AnonymizeOptions {
 
         self.player_by_steam_id(steam_id)
             .map(PlayerOption::should_anonymize_by_identifier)
-            .unwrap_or(true)
+            .unwrap_or_else(|| !self.has_player_selection())
     }
 
     fn replacement_name_for_player_id(&self, player_id: i32) -> &str {

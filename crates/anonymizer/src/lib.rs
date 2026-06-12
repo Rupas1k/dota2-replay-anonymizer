@@ -135,7 +135,7 @@ impl ReplayAnonymizer {
     fn should_anonymize_player_resource_field(&self, field_name: &str) -> bool {
         self.player_id_from_player_resource_field(field_name)
             .map(|player_id| self.rules.should_anonymize_player_id(player_id))
-            .unwrap_or(true)
+            .unwrap_or_else(|| self.rules.should_anonymize_unmatched_player())
     }
 
     fn should_anonymize_controller(&self, entity: &Entity, steam_id: Option<u64>) -> bool {
@@ -144,12 +144,14 @@ impl ReplayAnonymizer {
         }
 
         if let Some(player_id) = self.player_id_from_controller(entity) {
-            return self.rules.should_anonymize_player_id(player_id);
+            if self.rules.should_anonymize_player_id(player_id) {
+                return true;
+            }
         }
 
         steam_id
             .map(|steam_id| self.rules.should_anonymize_steam_id(steam_id))
-            .unwrap_or(true)
+            .unwrap_or_else(|| self.rules.should_anonymize_unmatched_player())
     }
 }
 
