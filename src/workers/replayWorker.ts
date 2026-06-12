@@ -76,7 +76,7 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
 
       try {
         const output = anonymize_loaded_replay(JSON.stringify(payload.options));
-        const blob = new Blob([output as unknown as BlobPart], {
+        const blob = new Blob([output], {
           type: "application/octet-stream",
         });
         release_anonymized_replay();

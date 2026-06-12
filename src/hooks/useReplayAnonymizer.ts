@@ -150,7 +150,9 @@ export function useReplayAnonymizer() {
 
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      void inspectFile(event.target.files?.[0] ?? null);
+      const nextFile = event.target.files?.[0] ?? null;
+      event.target.value = "";
+      void inspectFile(nextFile);
     },
     [inspectFile],
   );
