@@ -1,7 +1,7 @@
-export { buildAnonymizeOptions } from "./anonymizeOptions";
+export { buildAnonymizeOptions } from "./anonymizer/anonymizeOptions";
 export {
   createDefaultUiOptions,
   defaultUiOptions,
   loadUiOptions,
   saveUiOptions,
-} from "./uiOptions";
+} from "./anonymizer/uiOptions";

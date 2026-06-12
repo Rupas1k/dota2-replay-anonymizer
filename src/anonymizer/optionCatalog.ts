@@ -1,4 +1,4 @@
-import type { UiOptionKey } from "./types";
+import type { UiOptionKey } from "../types";
 
 export type OptionItem = {
   key?: UiOptionKey;

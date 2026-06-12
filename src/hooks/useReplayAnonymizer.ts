@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
-import { buildAnonymizeOptions } from "../anonymizeOptions";
-import { findOpenDotaHeroes, findOpenDotaProProfiles } from "../openDota";
-import { buildPlayerState } from "../playerRules";
+import { buildAnonymizeOptions } from "../anonymizer/anonymizeOptions";
+import { findOpenDotaHeroes, findOpenDotaProProfiles } from "../anonymizer/openDota";
+import { buildPlayerState } from "../anonymizer/playerRules";
 import type {
   AnonymizeOptions,
   HeroLookup,
@@ -14,7 +14,7 @@ import type {
   UiOptionKey,
   UiOptions,
 } from "../types";
-import { createDefaultUiOptions, loadUiOptions, saveUiOptions } from "../uiOptions";
+import { createDefaultUiOptions, loadUiOptions, saveUiOptions } from "../anonymizer/uiOptions";
 import { anonymizedReplayName, downloadBlob, optionsJsonName, playerKey } from "../utils";
 import { useReplayWorker } from "./useReplayWorker";
 

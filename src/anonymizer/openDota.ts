@@ -1,5 +1,5 @@
-import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "./types";
-import { openDotaAccountIdForPlayer } from "./utils";
+import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "../types";
+import { openDotaAccountIdForPlayer } from "../utils";
 
 type OpenDotaProPlayerResponse = {
   account_id?: unknown;

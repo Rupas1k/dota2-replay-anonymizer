@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { optionGroups, type OptionItem } from "../../optionCatalog";
+import { optionGroups, type OptionItem } from "../../anonymizer/optionCatalog";
 import type {
   PlayerSelectionMode,
   ProAnonymizeMode,

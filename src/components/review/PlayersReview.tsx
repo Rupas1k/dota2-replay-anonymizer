@@ -15,7 +15,7 @@ import {
   steamProfileUrl,
   type HeroDisplay,
   type PlayerTeamKind,
-} from "../../playerDisplay";
+} from "../../anonymizer/playerDisplay";
 import { defaultPlayerName, isLockedPlayer, playerKey } from "../../utils";
 
 function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {

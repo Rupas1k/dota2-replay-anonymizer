@@ -1,4 +1,4 @@
-import type { UiOptionKey, UiOptions } from "./types";
+import type { UiOptionKey, UiOptions } from "../types";
 
 const uiOptionsStorageKey = "d2-replay-anonymizer:ui-options:v1";
 

@@ -5,8 +5,8 @@ import type {
   ReplayInspection,
   ReplayPlayer,
   UiOptions,
-} from "./types";
-import { isLockedPlayer, playerKey } from "./utils";
+} from "../types";
+import { isLockedPlayer, playerKey } from "../utils";
 
 const normalizeSteamId = (steamId: string) => steamId.trim().toLowerCase();
 

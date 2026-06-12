@@ -1,5 +1,5 @@
-import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "./types";
-import { playerIdValue } from "./utils";
+import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "../types";
+import { playerIdValue } from "../utils";
 
 export type PlayerTeamKind = "radiant" | "dire" | "neutral";
 
