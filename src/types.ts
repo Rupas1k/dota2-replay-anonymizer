@@ -4,7 +4,6 @@ export type ReplayPlayer = {
   team_slot: number;
   team_num: number;
   hero_id: number;
-  slot?: number;
   name: string;
 };
 
@@ -73,10 +72,40 @@ export type AnonymizeOptions = {
   remove_player_click_movements: boolean;
 };
 
-export type WorkerSuccess<T> = {
+export type WorkerRequestPayloads = {
+  inspect: {
+    buffer: ArrayBuffer;
+  };
+  anonymize: {
+    options: AnonymizeOptions;
+    buffer?: ArrayBuffer;
+  };
+};
+
+export type WorkerResponsePayloads = {
+  inspect: {
+    inspection: ReplayInspection;
+  };
+  anonymize: {
+    blob: Blob;
+  };
+};
+
+export type WorkerRequestType = keyof WorkerRequestPayloads;
+
+export type WorkerRequest<T extends WorkerRequestType = WorkerRequestType> = {
+  [Type in WorkerRequestType]: {
+    id: number;
+    type: Type;
+    payload: WorkerRequestPayloads[Type];
+  };
+}[T];
+
+export type WorkerSuccess<T extends WorkerRequestType = WorkerRequestType> = {
   id: number;
+  type: T;
   ok: true;
-  payload: T;
+  payload: WorkerResponsePayloads[T];
 };
 
 export type WorkerFailure = {
@@ -88,6 +117,8 @@ export type WorkerFailure = {
 export type WorkerReady = {
   type: "ready";
 };
+
+export type WorkerResponse = WorkerReady | WorkerFailure | WorkerSuccess;
 
 export type PlayerState = {
   anonymize: boolean;

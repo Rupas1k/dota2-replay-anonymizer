@@ -4,26 +4,12 @@ import init, {
   load_replay,
   release_anonymized_replay,
 } from "../wasm-pkg/d2_replay_anonymizer_wasm.js";
-import type { AnonymizeOptions, ReplayInspection } from "../types";
-
-type InspectMessage = {
-  id: number;
-  type: "inspect";
-  payload: {
-    buffer: ArrayBuffer;
-  };
-};
-
-type AnonymizeMessage = {
-  id: number;
-  type: "anonymize";
-  payload: {
-    options: AnonymizeOptions;
-    buffer?: ArrayBuffer;
-  };
-};
-
-type WorkerRequest = InspectMessage | AnonymizeMessage;
+import type {
+  ReplayInspection,
+  WorkerRequest,
+  WorkerRequestType,
+  WorkerResponsePayloads,
+} from "../types";
 
 let replayLoaded = false;
 
@@ -43,6 +29,19 @@ const postError = (id: number, error: unknown) => {
   });
 };
 
+const postSuccess = <Type extends WorkerRequestType>(
+  id: number,
+  type: Type,
+  payload: WorkerResponsePayloads[Type],
+) => {
+  self.postMessage({
+    id,
+    type,
+    ok: true,
+    payload,
+  });
+};
+
 const handleMessage = ({ id, type, payload }: WorkerRequest) => {
   try {
     if (type === "inspect") {
@@ -54,7 +53,7 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
         ) as ReplayInspection;
         detachBuffer(payload.buffer);
         replayLoaded = true;
-        self.postMessage({ id, ok: true, payload: { inspection } });
+        postSuccess(id, type, { inspection });
       } finally {
         detachBuffer(payload.buffer);
       }
@@ -83,7 +82,7 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
         release_anonymized_replay();
         clear_replay();
         replayLoaded = false;
-        self.postMessage({ id, ok: true, payload: { blob } });
+        postSuccess(id, type, { blob });
       } finally {
         release_anonymized_replay();
       }

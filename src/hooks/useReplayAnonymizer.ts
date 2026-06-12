@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
-import {
-  buildAnonymizeOptions,
-  createDefaultUiOptions,
-  loadUiOptions,
-  saveUiOptions,
-} from "../options";
+import { buildAnonymizeOptions } from "../anonymizeOptions";
 import { findOpenDotaHeroes, findOpenDotaProProfiles } from "../openDota";
 import { buildPlayerState } from "../playerRules";
 import type {
@@ -19,6 +14,7 @@ import type {
   UiOptionKey,
   UiOptions,
 } from "../types";
+import { createDefaultUiOptions, loadUiOptions, saveUiOptions } from "../uiOptions";
 import { anonymizedReplayName, downloadBlob, optionsJsonName, playerKey } from "../utils";
 import { useReplayWorker } from "./useReplayWorker";
 
@@ -128,11 +124,7 @@ export function useReplayAnonymizer() {
       try {
         setStatus("Inspecting replay...");
         const buffer = await nextFile.arrayBuffer();
-        const response = await workerCall<{ inspection: ReplayInspection }>(
-          "inspect",
-          { buffer },
-          [buffer],
-        );
+        const response = await workerCall("inspect", { buffer }, [buffer]);
 
         const nextInspection = response.inspection;
         setInspection(nextInspection);
@@ -256,7 +248,7 @@ export function useReplayAnonymizer() {
         setStatus("Anonymizing replay...");
       }
 
-      const { blob } = await workerCall<{ blob: Blob }>("anonymize", payload, transfer);
+      const { blob } = await workerCall("anonymize", payload, transfer);
 
       downloadBlob(blob, outputFileName.trim() || anonymizedReplayName(file.name));
       setReplayResident(false);

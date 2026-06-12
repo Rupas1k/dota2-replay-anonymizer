@@ -28,15 +28,12 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
 };
 
 export const playerIdValue = (player: ReplayPlayer) => player.player_id ?? 0;
-export const playerSlotValue = (player: ReplayPlayer) => player.slot ?? playerIdValue(player);
 
 export const defaultPlayerName = (player: ReplayPlayer) =>
   player.name || `Player ${playerIdValue(player)}`;
 
 export const playerKey = (player: ReplayPlayer) =>
-  player.player_id == null
-    ? `userinfo:${playerSlotValue(player)}:${player.steam_id}`
-    : `player:${player.player_id}`;
+  player.player_id == null ? `steam:${player.steam_id}` : `player:${player.player_id}`;
 
 export const isLockedPlayer = (player: ReplayPlayer) => {
   return player.steam_id === "0";

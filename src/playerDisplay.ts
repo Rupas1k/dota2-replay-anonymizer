@@ -1,5 +1,5 @@
 import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "./types";
-import { playerSlotValue } from "./utils";
+import { playerIdValue } from "./utils";
 
 export type PlayerTeamKind = "radiant" | "dire" | "neutral";
 
@@ -31,13 +31,13 @@ export function playerTeam(player: ReplayPlayer) {
 }
 
 export function groupPlayers(players: ReplayPlayer[]): PlayerGroups {
-  const bySlot = (a: ReplayPlayer, b: ReplayPlayer) => playerSlotValue(a) - playerSlotValue(b);
+  const byPlayerId = (a: ReplayPlayer, b: ReplayPlayer) => playerIdValue(a) - playerIdValue(b);
   const byTeamSlot = (a: ReplayPlayer, b: ReplayPlayer) => a.team_slot - b.team_slot;
 
   return {
     radiant: players.filter((player) => playerTeam(player) === "radiant").sort(byTeamSlot),
     dire: players.filter((player) => playerTeam(player) === "dire").sort(byTeamSlot),
-    spectators: players.filter((player) => playerTeam(player) === "spectator").sort(bySlot),
+    spectators: players.filter((player) => playerTeam(player) === "spectator").sort(byPlayerId),
   };
 }
 

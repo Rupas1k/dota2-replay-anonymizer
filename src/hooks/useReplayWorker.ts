@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { WorkerFailure, WorkerReady, WorkerSuccess } from "../types";
-
-type WorkerResponse<T> = WorkerSuccess<T> | WorkerFailure | WorkerReady;
+import type {
+  WorkerRequestPayloads,
+  WorkerRequestType,
+  WorkerResponse,
+  WorkerResponsePayloads,
+} from "../types";
 
 type PendingWorkerRequest = {
   resolve: (payload: unknown) => void;
@@ -22,7 +25,7 @@ export function useReplayWorker() {
     });
     workerRef.current = worker;
 
-    worker.addEventListener("message", (event: MessageEvent<WorkerResponse<unknown>>) => {
+    worker.addEventListener("message", (event: MessageEvent<WorkerResponse>) => {
       if ("type" in event.data && event.data.type === "ready") {
         setWorkerReady(true);
         setWorkerError(null);
@@ -57,13 +60,17 @@ export function useReplayWorker() {
   }, []);
 
   const workerCall = useCallback(
-    <T,>(type: string, payload = {}, transfer: Transferable[] = []) => {
+    <Type extends WorkerRequestType>(
+      type: Type,
+      payload: WorkerRequestPayloads[Type],
+      transfer: Transferable[] = [],
+    ) => {
       if (!workerRef.current) {
         return Promise.reject(new Error("Worker failed to load."));
       }
 
       const id = nextRequestId.current++;
-      return new Promise<T>((resolve, reject) => {
+      return new Promise<WorkerResponsePayloads[Type]>((resolve, reject) => {
         requests.current.set(id, {
           resolve: resolve as (payload: unknown) => void,
           reject,
