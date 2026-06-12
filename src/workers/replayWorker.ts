@@ -35,11 +35,6 @@ const detachBuffer = (buffer: ArrayBuffer) => {
   structuredClone({}, { transfer: [buffer] });
 };
 
-const formatElapsed = (startedAt: number) => {
-  const elapsedMs = performance.now() - startedAt;
-  return elapsedMs >= 1000 ? `${(elapsedMs / 1000).toFixed(2)}s` : `${elapsedMs.toFixed(0)}ms`;
-};
-
 const postError = (id: number, error: unknown) => {
   self.postMessage({
     id,
@@ -53,7 +48,6 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
     if (type === "inspect") {
       replayLoaded = false;
       clear_replay();
-      const startedAt = performance.now();
       try {
         const inspection = JSON.parse(
           load_replay(new Uint8Array(payload.buffer)),
@@ -63,7 +57,6 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
         self.postMessage({ id, ok: true, payload: { inspection } });
       } finally {
         detachBuffer(payload.buffer);
-        console.log(`Parsing replay took ${formatElapsed(startedAt)}.`);
       }
       return;
     }
@@ -82,7 +75,6 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
         throw new Error("No replay loaded.");
       }
 
-      const startedAt = performance.now();
       try {
         const output = anonymize_loaded_replay(JSON.stringify(payload.options));
         const blob = new Blob([output as unknown as BlobPart], {
@@ -94,7 +86,6 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
         self.postMessage({ id, ok: true, payload: { blob } });
       } finally {
         release_anonymized_replay();
-        console.log(`Anonymizing replay took ${formatElapsed(startedAt)}.`);
       }
       return;
     }
