@@ -6,3 +6,5 @@
 /src/wasm-pkg/*
 !/src/wasm-pkg/d2_replay_anonymizer_wasm.d.ts
 *.dem
+Cargo.lock
+package-lock.json
