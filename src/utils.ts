@@ -11,7 +11,22 @@ export const formatBytes = (bytes: number) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-export const formatTicks = (ticks: number) => ticks.toLocaleString();
+export const replayBaseName = (fileName: string) => fileName.replace(/\.dem$/i, "");
+
+export const anonymizedReplayName = (fileName: string) => `${replayBaseName(fileName)}.anon.dem`;
+
+export const optionsJsonName = (fileName?: string) =>
+  `${fileName ? replayBaseName(fileName) : "d2-anonymizer-options"}.options.json`;
+
+export const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+};
 
 export const playerIdValue = (player: ReplayPlayer) => player.player_id ?? 0;
 export const playerSlotValue = (player: ReplayPlayer) => player.slot ?? playerIdValue(player);

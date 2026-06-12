@@ -7,72 +7,20 @@ import {
   saveUiOptions,
 } from "../options";
 import { findOpenDotaHeroes, findOpenDotaProProfiles } from "../openDota";
-import { buildPlayerState } from "../replayState";
+import { buildPlayerState } from "../playerRules";
 import type {
   AnonymizeOptions,
   HeroLookup,
   PlayerProfileLookup,
   PlayerState,
   PlayerStateMap,
-  ReplayPlayer,
   ReplayInspection,
   ReviewTab,
   UiOptionKey,
   UiOptions,
 } from "../types";
-import { isLockedPlayer, playerKey } from "../utils";
+import { anonymizedReplayName, downloadBlob, optionsJsonName, playerKey } from "../utils";
 import { useReplayWorker } from "./useReplayWorker";
-
-const normalizeSteamId = (steamId: string) => steamId.trim().toLowerCase();
-
-function listHasPlayerSteamId(list: string[], player: ReplayPlayer) {
-  const normalizedList = new Set(list.map(normalizeSteamId));
-  return normalizedList.has(normalizeSteamId(player.steam_id));
-}
-
-function shouldAnonymizePlayer({
-  options,
-  player,
-  profile,
-}: {
-  options: UiOptions;
-  player: ReplayPlayer;
-  profile?: PlayerProfileLookup;
-}) {
-  if (isLockedPlayer(player)) {
-    return false;
-  }
-
-  if (listHasPlayerSteamId(options.excludeSteamIds, player)) {
-    return false;
-  }
-
-  if (listHasPlayerSteamId(options.includeSteamIds, player)) {
-    return true;
-  }
-
-  if (player.team_num === 1) {
-    if (options.spectatorAnonymizeMode === "includeSpectators") {
-      return true;
-    }
-
-    if (options.spectatorAnonymizeMode === "excludeSpectators") {
-      return false;
-    }
-  }
-
-  if (profile?.isPro) {
-    if (options.proAnonymizeMode === "includePro") {
-      return true;
-    }
-
-    if (options.proAnonymizeMode === "excludePro") {
-      return false;
-    }
-  }
-
-  return options.playerSelectionMode === "includeAll";
-}
 
 export function useReplayAnonymizer() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -112,24 +60,12 @@ export function useReplayAnonymizer() {
     }
 
     setPlayerState((current) =>
-      Object.fromEntries(
-        inspection.players.map((player) => {
-          const key = playerKey(player);
-          const previous = current[key];
-
-          return [
-            key,
-            {
-              ...previous,
-              anonymize: shouldAnonymizePlayer({
-                options,
-                player,
-                profile: playerProfiles[player.steam_id],
-              }),
-            },
-          ];
-        }),
-      ),
+      buildPlayerState({
+        inspection,
+        options,
+        profiles: playerProfiles,
+        previous: current,
+      }),
     );
   }, [
     inspection,
@@ -148,31 +84,15 @@ export function useReplayAnonymizer() {
 
     let cancelled = false;
 
-    void findOpenDotaProProfiles(inspection.players).then((profiles) => {
+    void Promise.all([
+      findOpenDotaProProfiles(inspection.players),
+      findOpenDotaHeroes(inspection.players),
+    ]).then(([profiles, heroes]) => {
       if (cancelled) {
         return;
       }
 
       setPlayerProfiles(profiles);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [inspection]);
-
-  useEffect(() => {
-    if (!inspection) {
-      return;
-    }
-
-    let cancelled = false;
-
-    void findOpenDotaHeroes(inspection.players).then((heroes) => {
-      if (cancelled) {
-        return;
-      }
-
       setHeroesById(heroes);
     });
 
@@ -195,7 +115,7 @@ export function useReplayAnonymizer() {
   const inspectFile = useCallback(
     async (nextFile: File | null) => {
       setFile(nextFile);
-      setOutputFileName(nextFile ? nextFile.name.replace(/\.dem$/i, "") + ".anon.dem" : "");
+      setOutputFileName(nextFile ? anonymizedReplayName(nextFile.name) : "");
       resetInspection();
       setBusy(true);
 
@@ -215,10 +135,14 @@ export function useReplayAnonymizer() {
         );
 
         const nextInspection = response.inspection;
-        console.log("Replay players", nextInspection.players);
         setInspection(nextInspection);
         setReplayResident(true);
-        setPlayerState(buildPlayerState(nextInspection));
+        setPlayerState(
+          buildPlayerState({
+            inspection: nextInspection,
+            options,
+          }),
+        );
         setActiveTab("review");
         setStatus("Replay inspected. Review the anonymization settings.");
 
@@ -229,7 +153,7 @@ export function useReplayAnonymizer() {
         setBusy(false);
       }
     },
-    [resetInspection, workerCall, workerReady],
+    [options, resetInspection, workerCall, workerReady],
   );
 
   const handleFileChange = useCallback(
@@ -333,13 +257,8 @@ export function useReplayAnonymizer() {
       }
 
       const { blob } = await workerCall<{ blob: Blob }>("anonymize", payload, transfer);
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
 
-      link.href = url;
-      link.download = outputFileName.trim() || file.name.replace(/\.dem$/i, "") + ".anon.dem";
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
+      downloadBlob(blob, outputFileName.trim() || anonymizedReplayName(file.name));
       setReplayResident(false);
       setStatus("Done. The anonymized replay was downloaded.");
     } catch (error) {
@@ -365,14 +284,8 @@ export function useReplayAnonymizer() {
     const blob = new Blob([JSON.stringify(jsonOptions, null, 2) + "\n"], {
       type: "application/json",
     });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const baseName = file?.name.replace(/\.dem$/i, "") || "d2-anonymizer-options";
 
-    link.href = url;
-    link.download = `${baseName}.options.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 0);
+    downloadBlob(blob, optionsJsonName(file?.name));
     setStatus("Options JSON exported.");
   }, [file, inspection, options, playerState]);
 
