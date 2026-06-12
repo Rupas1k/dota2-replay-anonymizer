@@ -4,7 +4,7 @@ export function AppHeader() {
       <h1>Dota 2 Replay Anonymizer</h1>
       <a
         className="github-link"
-        href="https://github.com/Rupas1k/testrepo1"
+        href="https://github.com/Rupas1k/dota2-replay-anonymizer"
         target="_blank"
         rel="noreferrer"
         aria-label="Open project on GitHub"
