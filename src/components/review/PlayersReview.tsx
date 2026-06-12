@@ -6,27 +6,17 @@ import type {
   PlayerStateMap,
   ReplayPlayer,
 } from "../../types";
-import { defaultPlayerName, isLockedPlayer, isSourceTvPlayer, playerKey, playerSlotValue } from "../../utils";
-
-type TeamKind = "radiant" | "dire" | "neutral";
-
-type HeroDisplay = {
-  name: string;
-  slug?: string;
-};
-
-const sourceTvHero: HeroDisplay = { name: "SourceTV" };
-const spectatorHero: HeroDisplay = { name: "Spectator" };
-
-const heroImageUrl = (hero: HeroDisplay) => {
-  if (!hero.slug) {
-    return null;
-  }
-
-  return `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${hero.slug}.png`;
-};
-
-const normalizePlayerName = (name: string) => name.trim().replace(/\s+/g, " ").toLowerCase();
+import {
+  groupPlayers,
+  heroForPlayer,
+  heroImageUrl,
+  normalizePlayerName,
+  proPlayerLabel,
+  steamProfileUrl,
+  type HeroDisplay,
+  type PlayerTeamKind,
+} from "../../playerDisplay";
+import { defaultPlayerName, isLockedPlayer, isSourceTvPlayer, playerKey } from "../../utils";
 
 function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {
   return (
@@ -34,64 +24,6 @@ function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {
       anonymize: true,
     }
   );
-}
-
-function playerRowKey(player: ReplayPlayer) {
-  return playerKey(player);
-}
-
-function playerTeam(player: ReplayPlayer) {
-  if (player.team_num === 2) {
-    return "radiant";
-  }
-
-  if (player.team_num === 3) {
-    return "dire";
-  }
-
-  return "spectator";
-}
-
-function getPlayerGroups(players: ReplayPlayer[]) {
-  const bySlot = (a: ReplayPlayer, b: ReplayPlayer) => playerSlotValue(a) - playerSlotValue(b);
-  const byTeamSlot = (a: ReplayPlayer, b: ReplayPlayer) => a.team_slot - b.team_slot;
-  const radiant = players.filter((player) => playerTeam(player) === "radiant").sort(byTeamSlot);
-  const dire = players.filter((player) => playerTeam(player) === "dire").sort(byTeamSlot);
-  const support = players
-    .filter((player) => playerTeam(player) === "spectator")
-    .sort(bySlot);
-
-  return {
-    radiant,
-    dire,
-    support,
-  };
-}
-
-function heroForPlayer(player: ReplayPlayer, heroesById: Record<number, HeroLookup>) {
-  if (isSourceTvPlayer(player)) {
-    return sourceTvHero;
-  }
-
-  const hero = heroesById[player.hero_id];
-  if (!hero) {
-    return playerTeam(player) === "radiant" || playerTeam(player) === "dire"
-      ? { name: "Unknown hero" }
-      : spectatorHero;
-  }
-
-  return {
-    name: hero.name,
-    slug: hero.slug,
-  };
-}
-
-function steamProfileUrl(player: ReplayPlayer) {
-  if (isSourceTvPlayer(player) || !player.steam_id || player.steam_id === "0") {
-    return null;
-  }
-
-  return `https://steamcommunity.com/profiles/${player.steam_id}`;
 }
 
 function SteamLink({ player }: { player: ReplayPlayer }) {
@@ -127,16 +59,13 @@ function PlayerCard({
   player: ReplayPlayer;
   profile?: PlayerProfileLookup;
   playerState: PlayerState;
-  team: TeamKind;
+  team: PlayerTeamKind;
   onUpdate: (key: string, patch: Partial<PlayerState>) => void;
 }) {
   const playerName = defaultPlayerName(player);
   const sourceTv = isSourceTvPlayer(player);
   const locked = isLockedPlayer(player);
-  const proLabel =
-    profile?.isPro && profile.proName
-      ? `${profile.teamTag ? `${profile.teamTag}.` : ""}${profile.proName}`
-      : null;
+  const proLabel = proPlayerLabel(profile);
   const proNameMatchesReplayName =
     profile?.proName && normalizePlayerName(profile.proName) === normalizePlayerName(playerName);
   const togglePlayer = () => {
@@ -228,7 +157,7 @@ function TeamSection({
   heroesById: Record<number, HeroLookup>;
   playerProfiles: Record<string, PlayerProfileLookup>;
   playerState: PlayerStateMap;
-  team: TeamKind;
+  team: PlayerTeamKind;
   title: string;
   onUpdate: (key: string, patch: Partial<PlayerState>) => void;
 }) {
@@ -245,7 +174,7 @@ function TeamSection({
       <div className="team-player-grid">
         {players.map((player) => (
           <PlayerCard
-            key={playerRowKey(player)}
+            key={playerKey(player)}
             hero={heroForPlayer(player, heroesById)}
             player={player}
             profile={playerProfiles[player.steam_id]}
@@ -276,7 +205,7 @@ export function PlayersReview({
     return <div className="empty-inline">No players were found in this replay.</div>;
   }
 
-  const groups = getPlayerGroups(players);
+  const groups = groupPlayers(players);
 
   return (
     <section className="review-section players-review">
@@ -300,7 +229,7 @@ export function PlayersReview({
           onUpdate={onUpdate}
         />
         <TeamSection
-          players={groups.support}
+          players={groups.spectators}
           heroesById={heroesById}
           playerProfiles={playerProfiles}
           playerState={playerState}
