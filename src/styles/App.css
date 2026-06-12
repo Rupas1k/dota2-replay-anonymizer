@@ -255,7 +255,6 @@ textarea {
   }
 }
 
-.empty-state p,
 .option-toggle small,
 .upload-meta,
 .field-label {
@@ -979,36 +978,6 @@ textarea {
   font-weight: 680;
 }
 
-.empty-state {
-  display: grid;
-  place-items: center;
-  align-content: center;
-  min-height: 610px;
-  padding: 24px;
-  text-align: center;
-
-  h2 {
-    margin: 14px 0 6px;
-    font-size: 1.35rem;
-  }
-
-  p {
-    max-width: 460px;
-  }
-}
-
-.empty-mark {
-  display: grid;
-  width: 78px;
-  height: 78px;
-  place-items: center;
-  border-radius: var(--radius);
-  background: #0c1218;
-  color: #fff;
-  font-weight: 820;
-  letter-spacing: 0.08em;
-}
-
 .empty-inline {
   padding: 18px;
   border: 1px dashed var(--border-strong);
@@ -1036,9 +1005,6 @@ textarea {
   }
   .team-player-grid {
     grid-template-columns: 1fr;
-  }
-  .empty-state {
-    min-height: 420px;
   }
 }
 
