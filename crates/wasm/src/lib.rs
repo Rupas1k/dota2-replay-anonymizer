@@ -1,0 +1,87 @@
+use js_sys::Uint8Array;
+use std::cell::RefCell;
+use wasm_bindgen::prelude::*;
+
+thread_local! {
+    static REPLAY: RefCell<Option<Vec<u8>>> = const { RefCell::new(None) };
+    static OUTPUT: RefCell<Option<Vec<u8>>> = const { RefCell::new(None) };
+}
+
+fn inspect_replay_bytes(input: &[u8]) -> Result<String, JsValue> {
+    let inspection = d2_replay_anonymizer::inspect_replay(input)
+        .map_err(|err| JsValue::from_str(&err.to_string()))?;
+    serde_json::to_string(&inspection).map_err(|err| JsValue::from_str(&err.to_string()))
+}
+
+fn parse_options(options: &str) -> Result<d2_replay_anonymizer::AnonymizeOptions, JsValue> {
+    serde_json::from_str(options).map_err(|err| JsValue::from_str(&err.to_string()))
+}
+
+fn clear_output() {
+    OUTPUT.with(|output| {
+        *output.borrow_mut() = None;
+    });
+}
+
+#[wasm_bindgen]
+pub fn load_replay(input: Vec<u8>) -> Result<String, JsValue> {
+    clear_output();
+
+    REPLAY.with(|replay| {
+        *replay.borrow_mut() = Some(input);
+
+        let inspection = {
+            let replay = replay.borrow();
+            inspect_replay_bytes(replay.as_deref().expect("replay was just loaded"))
+        };
+
+        if inspection.is_err() {
+            *replay.borrow_mut() = None;
+        }
+
+        inspection
+    })
+}
+
+#[wasm_bindgen]
+pub fn clear_replay() {
+    REPLAY.with(|replay| {
+        *replay.borrow_mut() = None;
+    });
+    clear_output();
+}
+
+#[wasm_bindgen]
+pub fn anonymize_loaded_replay(options: &str) -> Result<Uint8Array, JsValue> {
+    clear_output();
+
+    let options = parse_options(options)?;
+    let output = REPLAY.with(|replay| {
+        let replay = replay.borrow();
+        let input = replay
+            .as_deref()
+            .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
+
+        d2_replay_anonymizer::anonymize_replay_bytes_with_options(input, options)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    })?;
+
+    OUTPUT.with(|stored| {
+        *stored.borrow_mut() = Some(output);
+
+        let stored = stored.borrow();
+        let output = stored
+            .as_deref()
+            .expect("output was just stored before creating a view");
+
+        // The worker immediately snapshots this view into a Blob, then calls
+        // release_anonymized_replay. No Wasm allocations may occur between
+        // creating the view and taking that snapshot.
+        Ok(unsafe { Uint8Array::view(output) })
+    })
+}
+
+#[wasm_bindgen]
+pub fn release_anonymized_replay() {
+    clear_output();
+}

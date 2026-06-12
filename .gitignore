@@ -1,0 +1,8 @@
+.idea
+.vscode
+/node_modules/
+/dist/
+/target/
+/src/wasm-pkg/*
+!/src/wasm-pkg/d2_replay_anonymizer_wasm.d.ts
+*.dem
