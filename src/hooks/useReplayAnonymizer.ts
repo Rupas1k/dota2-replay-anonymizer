@@ -15,7 +15,7 @@ import type {
   UiOptions,
 } from "../types";
 import { createDefaultUiOptions, loadUiOptions, saveUiOptions } from "../anonymizer/uiOptions";
-import { anonymizedReplayName, downloadBlob, optionsJsonName, playerKey } from "../utils";
+import { anonymizedReplayName, downloadBlob, optionsJsonName } from "../utils";
 import { useReplayWorker } from "./useReplayWorker";
 
 export function useReplayAnonymizer() {
