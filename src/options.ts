@@ -1,6 +1,8 @@
 import type {
   AnonymizeOptions,
+  PlayerOption,
   PlayerStateMap,
+  ReplayPlayer,
   ReplayInspection,
   UiOptionKey,
   UiOptions,
@@ -56,6 +58,22 @@ const stringArrayValue = (value: unknown) => {
   return value.filter((entry): entry is string => typeof entry === "string" && entry.trim() !== "");
 };
 
+const savedPlayerSelectionMode = (value: unknown) => {
+  return value === "excludeAll" || value === "includeAll" ? value : defaultUiOptions.playerSelectionMode;
+};
+
+const savedProAnonymizeMode = (value: unknown) => {
+  return value === "includePro" || value === "excludePro" || value === "ignore"
+    ? value
+    : defaultUiOptions.proAnonymizeMode;
+};
+
+const savedSpectatorAnonymizeMode = (value: unknown) => {
+  return value === "includeSpectators" || value === "excludeSpectators" || value === "ignore"
+    ? value
+    : defaultUiOptions.spectatorAnonymizeMode;
+};
+
 export const loadUiOptions = (): UiOptions => {
   try {
     const saved = localStorage.getItem(uiOptionsStorageKey);
@@ -72,24 +90,11 @@ export const loadUiOptions = (): UiOptions => {
       createDefaultUiOptions(),
     );
 
-    const savedHasSelectionMode = parsed.playerSelectionMode === "includeAll" || parsed.playerSelectionMode === "excludeAll";
-
     return {
       ...booleanOptions,
-      playerSelectionMode:
-        parsed.playerSelectionMode === "excludeAll"
-          ? "excludeAll"
-          : defaultUiOptions.playerSelectionMode,
-      proAnonymizeMode:
-        savedHasSelectionMode &&
-        (parsed.proAnonymizeMode === "includePro" || parsed.proAnonymizeMode === "excludePro")
-          ? parsed.proAnonymizeMode
-          : defaultUiOptions.proAnonymizeMode,
-      spectatorAnonymizeMode:
-        parsed.spectatorAnonymizeMode === "includeSpectators" ||
-        parsed.spectatorAnonymizeMode === "excludeSpectators"
-          ? parsed.spectatorAnonymizeMode
-          : defaultUiOptions.spectatorAnonymizeMode,
+      playerSelectionMode: savedPlayerSelectionMode(parsed.playerSelectionMode),
+      proAnonymizeMode: savedProAnonymizeMode(parsed.proAnonymizeMode),
+      spectatorAnonymizeMode: savedSpectatorAnonymizeMode(parsed.spectatorAnonymizeMode),
       includeSteamIds: stringArrayValue(parsed.includeSteamIds),
       excludeSteamIds: stringArrayValue(parsed.excludeSteamIds),
     };
@@ -106,6 +111,17 @@ export const saveUiOptions = (options: UiOptions) => {
   }
 };
 
+const buildPlayerOption = (player: ReplayPlayer, playerState: PlayerStateMap): PlayerOption => {
+  const locked = isLockedPlayer(player);
+
+  return {
+    player_id: player.player_id,
+    steam_id: player.steam_id,
+    anonymize: locked ? false : (playerState[playerKey(player)]?.anonymize ?? true),
+    replacement_name: locked ? player.name : "Anonymous",
+  };
+};
+
 export const buildAnonymizeOptions = ({
   inspection,
   playerState,
@@ -115,13 +131,8 @@ export const buildAnonymizeOptions = ({
   playerState: PlayerStateMap;
   options: UiOptions;
 }): AnonymizeOptions => {
-  const anonymizeOptions: AnonymizeOptions = {
-    players: inspection.players.map((player) => ({
-      player_id: player.player_id,
-      steam_id: player.steam_id,
-      anonymize: isLockedPlayer(player) ? false : (playerState[playerKey(player)]?.anonymize ?? true),
-      replacement_name: isLockedPlayer(player) ? player.name : "Anonymous",
-    })),
+  return {
+    players: inspection.players.map((player) => buildPlayerOption(player, playerState)),
     chat_messages: [],
     remove_combat_log: options.removeCombatLog,
     remove_match_id: options.removeMatchId,
@@ -150,8 +161,4 @@ export const buildAnonymizeOptions = ({
     remove_player_mouse_movements: options.removeMouseMovements,
     remove_player_click_movements: options.removeClickMovements,
   };
-
-  console.log("Anonymize options:", anonymizeOptions);
-
-  return anonymizeOptions;
 };

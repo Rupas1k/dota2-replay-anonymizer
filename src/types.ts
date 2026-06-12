@@ -1,17 +1,11 @@
-export type PlayerTeam = "radiant" | "dire" | "spectator";
-
 export type ReplayPlayer = {
   player_id: number | null;
   steam_id: string;
   team_slot: number;
   team_num: number;
   hero_id: number;
-  hero_name?: string;
-  hero_slug?: string;
   slot?: number;
   name: string;
-  replacement_name?: string;
-  anonymize?: boolean;
 };
 
 export type ReplayInspection = {
@@ -35,8 +29,6 @@ export type HeroLookup = {
   slug: string;
 };
 
-export type ChatAction = "keep" | "delete";
-
 export type PlayerOption = {
   player_id: number | null;
   steam_id: string;
@@ -46,7 +38,7 @@ export type PlayerOption = {
 
 export type ChatMessageOption = {
   index: number;
-  action: ChatAction;
+  action: "keep" | "delete";
   replacement_text: string;
 };
 
@@ -102,8 +94,6 @@ export type PlayerState = {
 };
 
 export type PlayerStateMap = Record<string, PlayerState>;
-
-export type ToggleSetter = (checked: boolean) => void;
 
 export type PlayerSelectionMode = "includeAll" | "excludeAll";
 export type ProAnonymizeMode = "ignore" | "includePro" | "excludePro";
