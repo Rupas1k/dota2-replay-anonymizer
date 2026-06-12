@@ -172,8 +172,8 @@ fn is_particle_to_remove(msg: &CUserMsgParticleManager) -> bool {
 
 #[rewriter]
 impl ReplayAnonymizer {
-    fn should_anonymize_user_id(&self, user_id: i32) -> bool {
-        self.rules.should_anonymize_user_id(user_id)
+    fn should_anonymize_player_id(&self, player_id: i32) -> bool {
+        self.rules.should_anonymize_player_id(player_id)
     }
 
     #[should_rewrite_entity]
@@ -196,27 +196,19 @@ impl ReplayAnonymizer {
             let entry_index = entry.index();
             if let Some(value) = entry.value_mut() {
                 let mut player = CMsgPlayerInfo::decode(value.as_slice())?;
-                let user_id = player.userid();
                 let steam_id = player.steamid();
 
-                if entry_index == 0|| is_source_tv_steam_id(steam_id)
-                {
+                if entry_index == 0 || is_source_tv_steam_id(steam_id) {
                     return Ok(());
                 }
 
-                let should_anonymize_user = self.rules.should_anonymize_user_id(user_id);
                 let should_anonymize_steam = self.rules.should_anonymize_steam_id(steam_id);
-                if !should_anonymize_user && !should_anonymize_steam {
+                if !should_anonymize_steam {
                     return Ok(());
                 }
 
                 if self.rules.remove_player_names() {
-                    let replacement_name = if should_anonymize_user {
-                        self.rules.replacement_name_for_user_id(user_id)
-                    } else {
-                        self.rules.replacement_name_for_steam_id(steam_id)
-                    };
-
+                    let replacement_name = self.rules.replacement_name_for_steam_id(steam_id);
                     player.name = replacement_name.to_string().into();
                 }
 
@@ -625,7 +617,7 @@ impl ReplayAnonymizer {
         msg: CDotaUserMsgChatMessage,
     ) -> Result<MessageRewrite, ParserError> {
         if self.rules.remove_chat_messages()
-            && self.should_anonymize_user_id(msg.source_player_id())
+            && self.should_anonymize_player_id(msg.source_player_id())
         {
             Ok(MessageRewrite::Drop)
         } else {
@@ -638,7 +630,7 @@ impl ReplayAnonymizer {
         &mut self,
         msg: CDotaUserMsgChatWheel,
     ) -> Result<MessageRewrite, ParserError> {
-        if self.rules.remove_chat_wheel() && self.should_anonymize_user_id(msg.player_id()) {
+        if self.rules.remove_chat_wheel() && self.should_anonymize_player_id(msg.player_id()) {
             Ok(MessageRewrite::Drop)
         } else {
             Ok(MessageRewrite::Keep)

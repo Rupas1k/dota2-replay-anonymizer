@@ -36,10 +36,8 @@ pub struct AnonymizeOptions {
 
 pub trait AnonymizeRules {
     fn should_anonymize_player_id(&self, player_id: i32) -> bool;
-    fn should_anonymize_user_id(&self, user_id: i32) -> bool;
     fn should_anonymize_steam_id(&self, steam_id: u64) -> bool;
     fn replacement_name_for_player_id(&self, player_id: i32) -> &str;
-    fn replacement_name_for_user_id(&self, user_id: i32) -> &str;
     fn replacement_name_for_steam_id(&self, steam_id: u64) -> &str;
     fn remove_combat_log(&self) -> bool;
     fn remove_match_id(&self) -> bool;
@@ -111,12 +109,6 @@ impl AnonymizeOptions {
             .find(|player| player.matches_player_id(player_id))
     }
 
-    fn player_by_user_id(&self, user_id: i32) -> Option<&PlayerOption> {
-        self.players
-            .iter()
-            .find(|player| player.matches_user_id(user_id))
-    }
-
     fn player_by_steam_id(&self, steam_id: u64) -> Option<&PlayerOption> {
         self.players
             .iter()
@@ -127,12 +119,6 @@ impl AnonymizeOptions {
 impl AnonymizeRules for AnonymizeOptions {
     fn should_anonymize_player_id(&self, player_id: i32) -> bool {
         self.player_by_player_id(player_id)
-            .map(PlayerOption::should_anonymize)
-            .unwrap_or(true)
-    }
-
-    fn should_anonymize_user_id(&self, user_id: i32) -> bool {
-        self.player_by_user_id(user_id)
             .map(PlayerOption::should_anonymize)
             .unwrap_or(true)
     }
@@ -149,12 +135,6 @@ impl AnonymizeRules for AnonymizeOptions {
 
     fn replacement_name_for_player_id(&self, player_id: i32) -> &str {
         self.player_by_player_id(player_id)
-            .map(|player| player.replacement_name.as_str())
-            .unwrap_or("Anonymous")
-    }
-
-    fn replacement_name_for_user_id(&self, user_id: i32) -> &str {
-        self.player_by_user_id(user_id)
             .map(|player| player.replacement_name.as_str())
             .unwrap_or("Anonymous")
     }
@@ -273,8 +253,6 @@ impl AnonymizeRules for AnonymizeOptions {
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
 pub struct PlayerOption {
     pub player_id: Option<i32>,
-    pub slot: i32,
-    pub user_id: i32,
     pub steam_id: SteamId,
     pub anonymize: bool,
     #[serde(default)]
@@ -294,10 +272,6 @@ impl PlayerOption {
 impl PlayerIdentity for PlayerOption {
     fn player_id(&self) -> Option<i32> {
         self.player_id
-    }
-
-    fn user_id(&self) -> i32 {
-        self.user_id
     }
 
     fn steam_id(&self) -> u64 {

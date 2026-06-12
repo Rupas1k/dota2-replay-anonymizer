@@ -5,12 +5,7 @@ import type {
   UiOptionKey,
   UiOptions,
 } from "./types";
-import {
-  isLockedPlayer,
-  playerKey,
-  playerSlotValue,
-  playerUserIdValue,
-} from "./utils";
+import { isLockedPlayer, playerKey } from "./utils";
 
 const uiOptionsStorageKey = "d2-replay-anonymizer:ui-options:v1";
 
@@ -123,8 +118,6 @@ export const buildAnonymizeOptions = ({
   const anonymizeOptions: AnonymizeOptions = {
     players: inspection.players.map((player) => ({
       player_id: player.player_id,
-      slot: playerSlotValue(player),
-      user_id: playerUserIdValue(player),
       steam_id: player.steam_id,
       anonymize: isLockedPlayer(player) ? false : (playerState[playerKey(player)]?.anonymize ?? true),
       replacement_name: isLockedPlayer(player) ? player.name : "Anonymous",

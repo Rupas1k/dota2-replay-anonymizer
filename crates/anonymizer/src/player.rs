@@ -18,7 +18,6 @@ pub enum PlayerTeam {
 
 pub trait PlayerIdentity {
     fn player_id(&self) -> Option<i32>;
-    fn user_id(&self) -> i32;
     fn steam_id(&self) -> u64;
 
     fn has_player_id(&self) -> bool {
@@ -41,10 +40,6 @@ pub trait PlayerIdentity {
         self.player_id() == Some(player_id)
     }
 
-    fn matches_user_id(&self, user_id: i32) -> bool {
-        self.user_id() == user_id
-    }
-
     fn matches_steam_id(&self, steam_id: u64) -> bool {
         self.steam_id() == steam_id
     }
@@ -64,10 +59,6 @@ pub struct ReplayPlayer {
 impl PlayerIdentity for ReplayPlayer {
     fn player_id(&self) -> Option<i32> {
         Some(self.player_id as i32)
-    }
-
-    fn user_id(&self) -> i32 {
-        self.player_id as i32
     }
 
     fn steam_id(&self) -> u64 {

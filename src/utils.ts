@@ -15,16 +15,15 @@ export const formatTicks = (ticks: number) => ticks.toLocaleString();
 
 export const playerIdValue = (player: ReplayPlayer) => player.player_id ?? 0;
 export const playerSlotValue = (player: ReplayPlayer) => player.slot ?? playerIdValue(player);
-export const playerUserIdValue = (player: ReplayPlayer) => player.user_id ?? playerIdValue(player);
 
 export const defaultPlayerName = (player: ReplayPlayer) =>
-  player.name || `Player ${playerUserIdValue(player)}`;
+  player.name || `Player ${playerIdValue(player)}`;
 
 const isSourceTvName = (name: string) => name.replace(/[\s_-]+/g, "").toLowerCase().includes("sourcetv");
 
 export const playerKey = (player: ReplayPlayer) =>
   player.player_id == null
-    ? `userinfo:${playerSlotValue(player)}:${playerUserIdValue(player)}:${player.steam_id}`
+    ? `userinfo:${playerSlotValue(player)}:${player.steam_id}`
     : `player:${player.player_id}`;
 
 export const isSourceTvPlayer = (player: ReplayPlayer) => {

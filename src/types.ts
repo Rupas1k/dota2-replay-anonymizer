@@ -2,7 +2,6 @@ export type PlayerTeam = "radiant" | "dire" | "spectator";
 
 export type ReplayPlayer = {
   player_id: number | null;
-  user_id?: number;
   steam_id: string;
   team_slot: number;
   team_num: number;
@@ -40,8 +39,6 @@ export type ChatAction = "keep" | "delete";
 
 export type PlayerOption = {
   player_id: number | null;
-  slot: number;
-  user_id: number;
   steam_id: string;
   anonymize: boolean;
   replacement_name: string;
