@@ -604,13 +604,17 @@ impl ReplayAnonymizer {
         &mut self,
         msg: CDotaUserMsgChatMessage,
     ) -> Result<MessageRewrite, ParserError> {
-        if self.rules.remove_chat_messages()
-            && self.should_anonymize_player_id(msg.source_player_id())
-        {
-            Ok(MessageRewrite::Drop)
-        } else {
-            Ok(MessageRewrite::Keep)
+        if !self.rules.remove_chat_messages() {
+            return Ok(MessageRewrite::Keep);
         }
+
+        let player_id = (msg.source_player_id() as u32) << 1;
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        Ok(MessageRewrite::Drop)
     }
 
     #[rewrite_packet_message]
@@ -618,11 +622,17 @@ impl ReplayAnonymizer {
         &mut self,
         msg: CDotaUserMsgChatWheel,
     ) -> Result<MessageRewrite, ParserError> {
-        if self.rules.remove_chat_wheel() && self.should_anonymize_player_id(msg.player_id()) {
-            Ok(MessageRewrite::Drop)
-        } else {
-            Ok(MessageRewrite::Keep)
+        if !self.rules.remove_chat_wheel() {
+            return Ok(MessageRewrite::Keep);
         }
+
+        let player_id = (msg.player_id() as u32) << 1;
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        Ok(MessageRewrite::Drop)
     }
 
     #[rewrite_packet_message]
