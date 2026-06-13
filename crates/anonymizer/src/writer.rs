@@ -126,11 +126,11 @@ impl ReplayAnonymizer {
         self.rules.should_anonymize_player_id(player_id)
     }
 
-    fn should_anonymize_controller(&self, entity: &Entity) -> bool {
-        let player_id = entity.get_property("m_nPlayerID").unwrap().u32();
+    fn should_anonymize_controller(&self, controller: &Entity) -> bool {
+        let player_id = controller.get_property("m_nPlayerID").unwrap().u32();
 
         if player_id == 1 {
-            let steam_id = entity.get_property("m_steamID").unwrap().u64();
+            let steam_id = controller.get_property("m_steamID").unwrap().u64();
             return !is_source_tv(steam_id) && self.rules.should_anonymize_steam_id(steam_id);
         }
 
@@ -138,15 +138,15 @@ impl ReplayAnonymizer {
     }
 }
 
-fn is_flying_courier(entity: &Entity) -> bool {
-    entity
+fn is_flying_courier(courier: &Entity) -> bool {
+    courier
         .get_property("m_bFlyingCourier")
         .map(|value| value.bool())
         .unwrap_or(false)
 }
 
-fn is_player_team(entity: &Entity) -> bool {
-    DotaTeam::from_entity(entity).is_some()
+fn is_player_team(team: &Entity) -> bool {
+    DotaTeam::from_entity(team).is_some()
 }
 
 fn is_particle_to_remove(msg: &CUserMsgParticleManager) -> bool {
@@ -243,8 +243,8 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(class = "CDOTATeam", field = "m_szTeamname")]
-    fn team_name(&mut self, entity: &Entity, value: String) -> Option<String> {
-        if !is_player_team(entity) || !self.rules.remove_team_name() {
+    fn team_name(&mut self, team: &Entity, value: String) -> Option<String> {
+        if !is_player_team(team) || !self.rules.remove_team_name() {
             return None;
         }
 
@@ -252,8 +252,8 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(class = "CDOTATeam", field = "m_szTag")]
-    fn team_tag(&mut self, entity: &Entity, value: String) -> Option<String> {
-        if !is_player_team(entity) || !self.rules.remove_team_tag() {
+    fn team_tag(&mut self, team: &Entity, value: String) -> Option<String> {
+        if !is_player_team(team) || !self.rules.remove_team_tag() {
             return None;
         }
 
@@ -261,8 +261,8 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(class = "CDOTATeam", field = "m_unTournamentTeamID")]
-    fn team_id(&mut self, entity: &Entity, value: u32) -> Option<u32> {
-        if !is_player_team(entity) || !self.rules.remove_tournament_team_id() {
+    fn team_id(&mut self, team: &Entity, value: u32) -> Option<u32> {
+        if !is_player_team(team) || !self.rules.remove_tournament_team_id() {
             return None;
         }
 
@@ -277,8 +277,8 @@ impl ReplayAnonymizer {
             "m_ulTeamBannerLogo",
         ),
     )]
-    fn team_logo(&mut self, entity: &Entity, value: u64) -> Option<u64> {
-        if !is_player_team(entity) || !self.rules.remove_team_logo() {
+    fn team_logo(&mut self, team: &Entity, value: u64) -> Option<u64> {
+        if !is_player_team(team) || !self.rules.remove_team_logo() {
             return None;
         }
 
@@ -305,12 +305,12 @@ impl ReplayAnonymizer {
         class = "CDOTAPlayerController",
         field = ends_with("m_iszPlayerName"),
     )]
-    fn player_controller_name(&mut self, entity: &Entity, value: String) -> Option<String> {
+    fn player_controller_name(&mut self, controller: &Entity, value: String) -> Option<String> {
         if !self.rules.remove_player_names() {
             return None;
         }
 
-        if !self.should_anonymize_controller(entity) {
+        if !self.should_anonymize_controller(controller) {
             return None;
         }
 
@@ -318,12 +318,12 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(class = "CDOTAPlayerController", field = "m_steamID")]
-    fn player_controller_steam_id(&mut self, entity: &Entity, value: u64) -> Option<u64> {
+    fn player_controller_steam_id(&mut self, controller: &Entity, value: u64) -> Option<u64> {
         if !self.rules.remove_player_steam_ids() {
             return None;
         }
 
-        if !self.should_anonymize_controller(entity) {
+        if !self.should_anonymize_controller(controller) {
             return None;
         }
 
@@ -470,7 +470,7 @@ impl ReplayAnonymizer {
     )]
     fn team_player_steam_id(
         &mut self,
-        entity: &Entity,
+        team_data: &Entity,
         field_name: &str,
         value: u64,
     ) -> Option<u64> {
@@ -479,7 +479,7 @@ impl ReplayAnonymizer {
         }
 
         let team_data_index = self.vector_index_from_field_name(field_name);
-        let player_id = entity
+        let player_id = team_data
             .get_property(&format!("m_vecDataTeam.{team_data_index:04}.m_nPlayerID"))
             .ok()?
             .u32();
@@ -495,12 +495,12 @@ impl ReplayAnonymizer {
         class = "CDOTAPlayerController",
         field = starts_with("m_iCursor"),
     )]
-    fn remove_cursor_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
+    fn remove_cursor_movements(&mut self, controller: &Entity, value: i32) -> Option<i32> {
         if !self.rules.remove_player_mouse_movements() {
             return None;
         }
 
-        if !self.should_anonymize_controller(entity) {
+        if !self.should_anonymize_controller(controller) {
             return None;
         }
 
@@ -515,12 +515,12 @@ impl ReplayAnonymizer {
             ends_with("m_cellY"),
         ),
     )]
-    fn remove_camera_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
+    fn remove_camera_movements(&mut self, pawn: &Entity, value: i32) -> Option<i32> {
         if !self.rules.remove_player_camera_movements() {
             return None;
         }
 
-        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
+        let player_id = pawn.get_property("m_nPlayerID").ok()?.u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
@@ -537,12 +537,12 @@ impl ReplayAnonymizer {
             ends_with("m_vecZ"),
         ),
     )]
-    fn remove_camera_movements_vec(&mut self, entity: &Entity, value: f32) -> Option<f32> {
+    fn remove_camera_movements_vec(&mut self, pawn: &Entity, value: f32) -> Option<f32> {
         if !self.rules.remove_player_camera_movements() {
             return None;
         }
 
-        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
+        let player_id = pawn.get_property("m_nPlayerID").ok()?.u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
@@ -578,12 +578,12 @@ impl ReplayAnonymizer {
         ),
         field = ends_with("m_hModel"),
     )]
-    fn ward_model(&mut self, entity: &Entity, value: u64) -> Option<u64> {
+    fn ward_model(&mut self, ward: &Entity, value: u64) -> Option<u64> {
         if !self.rules.remove_ward_cosmetics() {
             return None;
         }
 
-        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+        let player_id = ward.get_property("m_nPlayerOwnerID").ok()?.u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
@@ -599,12 +599,12 @@ impl ReplayAnonymizer {
         ),
         field = ends_with("m_flScale"),
     )]
-    fn ward_model_scale(&mut self, entity: &Entity, value: f32) -> Option<f32> {
+    fn ward_model_scale(&mut self, ward: &Entity, value: f32) -> Option<f32> {
         if !self.rules.remove_ward_cosmetics() {
             return None;
         }
 
-        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+        let player_id = ward.get_property("m_nPlayerOwnerID").ok()?.u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
@@ -617,18 +617,18 @@ impl ReplayAnonymizer {
         class = "CDOTA_Unit_Courier",
         field = ends_with("m_hModel"),
     )]
-    fn courier_model(&mut self, entity: &Entity, value: u64) -> Option<u64> {
+    fn courier_model(&mut self, courier: &Entity, value: u64) -> Option<u64> {
         if !self.rules.remove_courier_cosmetics() {
             return None;
         }
 
-        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+        let player_id = courier.get_property("m_nPlayerOwnerID").ok()?.u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
-        let model = DotaTeam::from_entity(entity)?.courier_model(is_flying_courier(entity));
+        let model = DotaTeam::from_entity(courier)?.courier_model(is_flying_courier(courier));
         self.replace_if_changed(value, model)
     }
 
@@ -636,12 +636,12 @@ impl ReplayAnonymizer {
         class = "CDOTA_Unit_Courier",
         field = ends_with("m_flScale"),
     )]
-    fn courier_model_scale(&mut self, entity: &Entity, value: f32) -> Option<f32> {
+    fn courier_model_scale(&mut self, courier: &Entity, value: f32) -> Option<f32> {
         if !self.rules.remove_courier_cosmetics() {
             return None;
         }
 
-        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+        let player_id = courier.get_property("m_nPlayerOwnerID").ok()?.u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
@@ -654,12 +654,12 @@ impl ReplayAnonymizer {
         class = "CDOTA_Unit_Poogie",
         field = ends_with("m_hModel"),
     )]
-    fn poogie_model(&mut self, entity: &Entity, value: u64) -> Option<u64> {
+    fn poogie_model(&mut self, poogie: &Entity, value: u64) -> Option<u64> {
         if !self.rules.remove_poogie_cosmetics() {
             return None;
         }
 
-        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+        let player_id = poogie.get_property("m_nPlayerOwnerID").ok()?.u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
@@ -672,12 +672,12 @@ impl ReplayAnonymizer {
         class = "CDOTA_BaseNPC_Effigy_Statue",
         field = contains("m_hMyWearables."),
     )]
-    fn effigy_wearable_handle(&mut self, entity: &Entity, value: u32) -> Option<u32> {
+    fn effigy_wearable_handle(&mut self, effigy: &Entity, value: u32) -> Option<u32> {
         if !self.rules.remove_statue_cosmetics() {
             return None;
         }
 
-        let player_id = entity
+        let player_id = effigy
             .get_property("m_iHeroStatueOwnerPlayerID")
             .ok()?
             .u32();
