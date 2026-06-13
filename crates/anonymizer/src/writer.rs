@@ -30,6 +30,7 @@ const ENTITY_REWRITE_CLASSES: &[&str] = &[
     "CDOTA_Unit_Poogie",
     "CDOTA_BaseNPC_Effigy_Statue",
     "CDOTATeam",
+    "CDOTAPlayerPawn"
 ];
 
 const ENTITY_TRACK_CLASSES: &[&str] = &[
@@ -38,7 +39,8 @@ const ENTITY_TRACK_CLASSES: &[&str] = &[
     "CDOTA_Unit_Courier",
     "CDOTA_Unit_Poogie",
     "CDOTA_DataRadiant",
-    "CDOTA_DataDire"
+    "CDOTA_DataDire",
+    "CDOTAPlayerPawn"
 ];
 
 struct ReplayAnonymizer {
@@ -668,6 +670,46 @@ impl ReplayAnonymizer {
         }
 
         Ok(MessageRewrite::Drop)
+    }
+
+    #[rewrite_field(class = "CDOTAPlayerPawn", field = any(
+        ends_with("m_cellX"),
+        ends_with("m_cellY"),
+        ends_with("m_cellY")
+    ))]
+    fn remove_camera_movements(&mut self, ctx: &Context, entity: &Entity, value: i32) -> Option<i32> {
+        if !self.rules.remove_player_camera_movements() {
+            return None;
+        }
+
+        let controller_handle = entity.get_property("m_hController").ok()?.usize();
+        let controller = ctx.entities().get_by_handle(controller_handle).ok()?;
+
+        if !self.should_anonymize_controller(controller) {
+            return None;
+        }
+
+        self.replace_if_changed(value, 128)
+    }
+
+    #[rewrite_field(class = "CDOTAPlayerPawn", field = any(
+        ends_with("m_vecX"),
+        ends_with("m_vecY"),
+        ends_with("m_vecZ")
+    ))]
+    fn remove_camera_movements_vec(&mut self, ctx: &Context, entity: &Entity, value: f32) -> Option<f32> {
+        if !self.rules.remove_player_camera_movements() {
+            return None;
+        }
+
+        let controller_handle = entity.get_property("m_hController").ok()?.usize();
+        let controller = ctx.entities().get_by_handle(controller_handle).ok()?;
+
+        if !self.should_anonymize_controller(controller) {
+            return None;
+        }
+
+        self.zero(value)
     }
 
     #[rewrite_packet_message]
