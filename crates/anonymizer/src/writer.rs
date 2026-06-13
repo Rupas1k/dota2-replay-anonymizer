@@ -690,6 +690,19 @@ impl ReplayAnonymizer {
         Ok(MessageRewrite::Drop)
     }
 
+    #[rewrite_field(class = "CDOTAPlayerController", field = starts_with("m_iCursor"))]
+    fn remove_cursor_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
+        if !self.rules.remove_player_mouse_movements() {
+            return None;
+        }
+
+        if !self.should_anonymize_controller(entity) {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
     #[rewrite_field(class = "CDOTAPlayerPawn", field = any(
         ends_with("m_cellX"),
         ends_with("m_cellY"),
