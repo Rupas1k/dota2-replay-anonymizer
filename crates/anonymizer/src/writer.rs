@@ -218,7 +218,10 @@ impl ReplayAnonymizer {
         Ok(())
     }
 
-    #[rewrite_field(class = "CDOTA_PlayerResource", field = ends_with("m_iszPlayerName"))]
+    #[rewrite_field(
+        class = "CDOTA_PlayerResource",
+        field = ends_with("m_iszPlayerName"),
+    )]
     fn player_resource_name(&mut self, field_name: &str, value: String) -> Option<String> {
         if !self.rules.remove_player_names() {
             return None;
@@ -231,7 +234,10 @@ impl ReplayAnonymizer {
         self.replace_if_changed(value, ANONYMOUS_NAME.to_string())
     }
 
-    #[rewrite_field(class = "CDOTAPlayerController", field = ends_with("m_iszPlayerName"))]
+    #[rewrite_field(
+        class = "CDOTAPlayerController",
+        field = ends_with("m_iszPlayerName"),
+    )]
     fn player_controller_name(&mut self, entity: &Entity, value: String) -> Option<String> {
         if !self.rules.remove_player_names() {
             return None;
@@ -542,7 +548,7 @@ impl ReplayAnonymizer {
     #[rewrite_field(
         class = any(
             "CDOTA_NPC_Observer_Ward",
-            "CDOTA_NPC_Observer_Ward_TrueSight"
+            "CDOTA_NPC_Observer_Ward_TrueSight",
         ),
         field = ends_with("m_flScale"),
     )]
@@ -740,7 +746,10 @@ impl ReplayAnonymizer {
         Ok(MessageRewrite::Drop)
     }
 
-    #[rewrite_field(class = "CDOTAPlayerController", field = starts_with("m_iCursor"))]
+    #[rewrite_field(
+        class = "CDOTAPlayerController",
+        field = starts_with("m_iCursor"),
+    )]
     fn remove_cursor_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
         if !self.rules.remove_player_mouse_movements() {
             return None;
@@ -753,16 +762,15 @@ impl ReplayAnonymizer {
         self.zero(value)
     }
 
-    #[rewrite_field(class = "CDOTAPlayerPawn", field = any(
-        ends_with("m_cellX"),
-        ends_with("m_cellY"),
-        ends_with("m_cellY")
-    ))]
-    fn remove_camera_movements(
-        &mut self,
-        entity: &Entity,
-        value: i32,
-    ) -> Option<i32> {
+    #[rewrite_field(
+        class = "CDOTAPlayerPawn",
+        field = any(
+            ends_with("m_cellX"),
+            ends_with("m_cellY"),
+            ends_with("m_cellY"),
+        ),
+    )]
+    fn remove_camera_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
         if !self.rules.remove_player_camera_movements() {
             return None;
         }
@@ -776,16 +784,15 @@ impl ReplayAnonymizer {
         self.replace_if_changed(value, 128)
     }
 
-    #[rewrite_field(class = "CDOTAPlayerPawn", field = any(
-        ends_with("m_vecX"),
-        ends_with("m_vecY"),
-        ends_with("m_vecZ")
-    ))]
-    fn remove_camera_movements_vec(
-        &mut self,
-        entity: &Entity,
-        value: f32,
-    ) -> Option<f32> {
+    #[rewrite_field(
+        class = "CDOTAPlayerPawn",
+        field = any(
+            ends_with("m_vecX"),
+            ends_with("m_vecY"),
+            ends_with("m_vecZ"),
+        ),
+    )]
+    fn remove_camera_movements_vec(&mut self, entity: &Entity, value: f32) -> Option<f32> {
         if !self.rules.remove_player_camera_movements() {
             return None;
         }
