@@ -7,10 +7,10 @@ thread_local! {
     static OUTPUT: RefCell<Option<Vec<u8>>> = const { RefCell::new(None) };
 }
 
-fn inspect_replay_bytes(input: &[u8]) -> Result<String, JsValue> {
-    let inspection = d2_replay_anonymizer::inspect_replay(input)
+fn read_replay_bytes(input: &[u8]) -> Result<String, JsValue> {
+    let replay = d2_replay_anonymizer::read_replay(input)
         .map_err(|err| JsValue::from_str(&err.to_string()))?;
-    serde_json::to_string(&inspection).map_err(|err| JsValue::from_str(&err.to_string()))
+    serde_json::to_string(&replay).map_err(|err| JsValue::from_str(&err.to_string()))
 }
 
 fn parse_options(options: &str) -> Result<d2_replay_anonymizer::AnonymizeOptions, JsValue> {
@@ -32,7 +32,7 @@ pub fn load_replay(input: Vec<u8>) -> Result<String, JsValue> {
 
         let inspection = {
             let replay = replay.borrow();
-            inspect_replay_bytes(replay.as_deref().expect("replay was just loaded"))
+            read_replay_bytes(replay.as_deref().expect("replay was just loaded"))
         };
 
         if inspection.is_err() {

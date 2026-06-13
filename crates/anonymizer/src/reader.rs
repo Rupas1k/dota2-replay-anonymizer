@@ -6,14 +6,14 @@ use std::collections::HashSet;
 const EMPTY_HANDLE: u32 = 16777215;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
-pub struct ReplayInspection {
+pub struct ReplayRead {
     pub input_bytes: usize,
     pub playback_ticks: i32,
     pub players: Vec<ReplayPlayer>,
 }
 
 #[derive(Default)]
-struct ReplayInspector {
+struct ReplayReader {
     players: Vec<ReplayPlayer>,
     pub handles: HashSet<u32>,
     hero_handles_loaded: bool,
@@ -21,7 +21,7 @@ struct ReplayInspector {
 
 #[observer]
 #[uses_entities]
-impl ReplayInspector {
+impl ReplayReader {
     #[on_entity("CDOTAPlayerController")]
     fn on_player_controller(&mut self, entity: &Entity) -> ObserverResult {
         if self.handles.contains(&entity.handle()) {
@@ -116,18 +116,18 @@ impl ReplayInspector {
     }
 }
 
-pub fn inspect_replay(input: &[u8]) -> Result<ReplayInspection, ParserError> {
+pub fn read_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
     let mut parser = Parser::from_slice(input)?;
     let playback_ticks = parser.replay_info().playback_ticks();
-    let inspector = parser.register_observer::<ReplayInspector>();
+    let reader = parser.register_observer::<ReplayReader>();
 
     parser.run_to_end()?;
 
-    let mut players = inspector.borrow().players.clone();
+    let mut players = reader.borrow().players.clone();
 
     players.sort_by_key(|player| player.player_id);
 
-    Ok(ReplayInspection {
+    Ok(ReplayRead {
         input_bytes: input.len(),
         playback_ticks,
         players,
