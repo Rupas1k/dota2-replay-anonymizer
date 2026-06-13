@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "npm run build:wasm && vite build",
+    "build:pages": "npm run build:wasm && vite build --mode pages",
     "build:wasm": "wasm-pack build crates/wasm --target web --out-dir ../../src/wasm-pkg --release",
     "preview": "vite preview --host 0.0.0.0"
   },
