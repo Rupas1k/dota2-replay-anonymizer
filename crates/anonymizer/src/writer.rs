@@ -691,6 +691,26 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_packet_message]
+    fn remove_clicks(
+        &mut self,
+        ctx: &Context,
+        msg: CDotaUserMsgSpectatorPlayerUnitOrders,
+    ) -> Result<MessageRewrite, ParserError> {
+        if !self.rules.remove_player_clicks() {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        let controller = ctx.entities().get_by_index(msg.entindex() as usize)?;
+        let player_id = controller.get_property("m_nPlayerID")?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        Ok(MessageRewrite::Drop)
+    }
+
+    #[rewrite_packet_message]
     fn remove_combat_log(
         &mut self,
         _msg: CMsgDotaCombatLogEntry,
