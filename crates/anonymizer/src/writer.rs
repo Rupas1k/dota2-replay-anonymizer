@@ -691,6 +691,24 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_packet_message]
+    fn remove_map_drawings(
+        &mut self,
+        msg: CDotaUserMsgMapLine,
+    ) -> Result<MessageRewrite, ParserError> {
+        if !self.rules.remove_minimap_drawings() {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        let player_id = (msg.player_id() as u32) << 1;
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        Ok(MessageRewrite::Drop)
+    }
+
+    #[rewrite_packet_message]
     fn remove_clicks(
         &mut self,
         ctx: &Context,
