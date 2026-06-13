@@ -47,7 +47,7 @@ const ENTITY_TRACK_CLASSES: &[&str] = &[
 
 struct ReplayAnonymizer {
     rules: Box<dyn AnonymizeRules>,
-    particles_dropped: u32,
+    particles_seen: u32,
     messages_added: u32,
 }
 
@@ -58,7 +58,7 @@ impl ReplayAnonymizer {
     {
         Self {
             rules: Box::new(rules),
-            particles_dropped: 0,
+            particles_seen: 0,
             messages_added: 0,
         }
     }
@@ -630,15 +630,13 @@ impl ReplayAnonymizer {
         &mut self,
         msg: CUserMsgParticleManager,
     ) -> Result<MessageRewrite, ParserError> {
-        if self.rules.remove_dota_plus_badges()
-            && self.particles_dropped < PARTICLES_TO_DROP
-            && is_particle_to_remove(&msg)
-        {
-            self.particles_dropped += 1;
-            Ok(MessageRewrite::Drop)
-        } else {
-            Ok(MessageRewrite::Keep)
+        if !self.particles_seen < PARTICLES_TO_DROP || !is_particle_to_remove(&msg) {
+            return Ok(MessageRewrite::Keep);
         }
+
+        self.particles_seen += 1;
+    
+        Ok(MessageRewrite::Drop)
     }
 }
 
