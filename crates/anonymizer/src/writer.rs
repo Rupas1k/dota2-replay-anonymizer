@@ -37,6 +37,8 @@ const ENTITY_TRACK_CLASSES: &[&str] = &[
     "CDOTAPlayerController",
     "CDOTA_Unit_Courier",
     "CDOTA_Unit_Poogie",
+    "CDOTA_DataRadiant",
+    "CDOTA_DataDire"
 ];
 
 struct ReplayAnonymizer {
