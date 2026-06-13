@@ -78,13 +78,11 @@ enum DotaTeam {
 
 impl DotaTeam {
     fn from_entity(entity: &Entity) -> Option<Self> {
-        match entity
-            .get_property("m_iTeamNum")
-            .ok()
-            .and_then(|value| TryInto::<u8>::try_into(value).ok())
-        {
-            Some(2) => Some(Self::Radiant),
-            Some(3) => Some(Self::Dire),
+        let team_num = entity.get_property("m_iTeamNum").ok()?.u8();
+
+        match team_num {
+            2 => Some(Self::Radiant),
+            3 => Some(Self::Dire),
             _ => None,
         }
     }
