@@ -690,6 +690,18 @@ impl ReplayAnonymizer {
         Ok(MessageRewrite::Drop)
     }
 
+    #[rewrite_packet_message]
+    fn remove_combat_log(
+        &mut self,
+        _msg: CMsgDotaCombatLogEntry,
+    ) -> Result<MessageRewrite, ParserError> {
+        if !self.rules.remove_combat_log() {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        Ok(MessageRewrite::Drop)
+    }
+
     #[rewrite_field(class = "CDOTAPlayerController", field = starts_with("m_iCursor"))]
     fn remove_cursor_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
         if !self.rules.remove_player_mouse_movements() {
