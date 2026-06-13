@@ -760,7 +760,6 @@ impl ReplayAnonymizer {
     ))]
     fn remove_camera_movements(
         &mut self,
-        ctx: &Context,
         entity: &Entity,
         value: i32,
     ) -> Option<i32> {
@@ -768,10 +767,9 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        let controller_handle = entity.get_property("m_hController").ok()?.usize();
-        let controller = ctx.entities().get_by_handle(controller_handle).ok()?;
+        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
 
-        if !self.should_anonymize_controller(controller) {
+        if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
@@ -785,7 +783,6 @@ impl ReplayAnonymizer {
     ))]
     fn remove_camera_movements_vec(
         &mut self,
-        ctx: &Context,
         entity: &Entity,
         value: f32,
     ) -> Option<f32> {
@@ -793,10 +790,9 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        let controller_handle = entity.get_property("m_hController").ok()?.usize();
-        let controller = ctx.entities().get_by_handle(controller_handle).ok()?;
+        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
 
-        if !self.should_anonymize_controller(controller) {
+        if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
