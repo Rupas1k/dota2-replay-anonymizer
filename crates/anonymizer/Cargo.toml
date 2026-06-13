@@ -3,6 +3,7 @@ name = "d2-replay-anonymizer"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+authors = ["Artem Rupasov <artemrupasov125@gmail.com>"]
 
 [dependencies]
 source2-demo = { version = "0.5", default-features = false, features = ["dota"] }

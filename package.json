@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
+  "author": "Artem Rupasov <artemrupasov125@gmail.com>",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
