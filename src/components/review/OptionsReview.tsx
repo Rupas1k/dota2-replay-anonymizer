@@ -36,7 +36,7 @@ function OptionToggle({
   const disabled = Boolean(option.locked || !option.key);
   const description = checked
     ? option.description
-    : (option.inactiveDescription ?? "Keeps this data unchanged.");
+    : (option.inactiveDescription ?? "Leave this data as-is.");
 
   return (
     <label className={`option-toggle${checked ? " is-checked" : ""}${disabled ? " is-locked" : ""}`}>
