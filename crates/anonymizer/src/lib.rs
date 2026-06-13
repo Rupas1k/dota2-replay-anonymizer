@@ -453,29 +453,29 @@ impl ReplayAnonymizer {
 
     #[rewrite_field(class = "CDOTATeam", field = "m_szTeamname")]
     fn team_name(&mut self, entity: &Entity, value: String) -> Option<String> {
-        if is_player_team(entity) && self.rules.remove_team_name() {
-            self.zero(value)
-        } else {
-            None
-        }
+        if !is_player_team(entity) || !self.rules.remove_team_name() {
+             return None;
+         }
+
+         self.zero(value)
     }
 
     #[rewrite_field(class = "CDOTATeam", field = "m_szTag")]
     fn team_tag(&mut self, entity: &Entity, value: String) -> Option<String> {
-        if is_player_team(entity) && self.rules.remove_team_tag() {
-            self.zero(value)
-        } else {
-            None
-        }
+        if !is_player_team(entity) || !self.rules.remove_team_tag() {
+             return None;
+         }
+
+         self.zero(value)
     }
 
     #[rewrite_field(class = "CDOTATeam", field = "m_unTournamentTeamID")]
     fn team_id(&mut self, entity: &Entity, value: u32) -> Option<u32> {
-        if is_player_team(entity) && self.rules.remove_tournament_team_id() {
-            self.zero(value)
-        } else {
-            None
-        }
+        if !is_player_team(entity) || !self.rules.remove_tournament_team_id() {
+             return None;
+         }
+
+         self.zero(value)
     }
 
     #[rewrite_field(
@@ -487,11 +487,11 @@ impl ReplayAnonymizer {
         ),
     )]
     fn team_logo(&mut self, entity: &Entity, value: u64) -> Option<u64> {
-        if is_player_team(entity) && self.rules.remove_team_logo() {
-            self.zero(value)
-        } else {
-            None
+        if !is_player_team(entity) || !self.rules.remove_team_logo() {
+            return None;
         }
+
+        self.zero(value)
     }
 
     #[rewrite_field(
