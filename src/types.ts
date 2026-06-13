@@ -30,6 +30,7 @@ export type HeroLookup = {
 
 export type PlayerOption = {
   player_id: number | null;
+  steam_id: string;
   anonymize: boolean;
 };
 

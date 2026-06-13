@@ -6,11 +6,12 @@ import type {
   ReplayPlayer,
   UiOptions,
 } from "../types";
-import { playerKey } from "../utils";
+import { playerKey, steamIdText } from "../utils";
 
 const buildPlayerOption = (player: ReplayPlayer, playerState: PlayerStateMap): PlayerOption => {
   return {
     player_id: player.player_id,
+    steam_id: steamIdText(player.steam_id),
     anonymize: playerState[playerKey(player)]?.anonymize ?? true,
   };
 };

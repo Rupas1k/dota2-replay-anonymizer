@@ -1,5 +1,5 @@
 use crate::options::{AnonymizeOptions, AnonymizeRules};
-use crate::player::is_source_tv_steam_id;
+use crate::player::is_source_tv;
 use source2_demo::prelude::*;
 use source2_demo::proto::*;
 use source2_demo::writer::*;
@@ -126,7 +126,8 @@ impl ReplayAnonymizer {
         let player_id = entity.get_property("m_nPlayerID").unwrap().u32();
 
         if player_id == 1 {
-            return false;
+            let steam_id = entity.get_property("m_steamID").unwrap().u64();
+            return !is_source_tv(steam_id) && self.rules.should_anonymize_steam_id(steam_id);
         }
 
         self.rules.should_anonymize_player_id(player_id)
@@ -174,7 +175,7 @@ impl ReplayAnonymizer {
                 let mut player = CMsgPlayerInfo::decode(value.as_slice())?;
                 let steam_id = player.steamid();
 
-                if entry_index == 0 || is_source_tv_steam_id(steam_id) {
+                if entry_index == 0 || is_source_tv(steam_id) {
                     return Ok(());
                 }
 
@@ -261,7 +262,7 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        if is_source_tv_steam_id(value) || !self.should_anonymize_player_resource_field(field_name)
+        if is_source_tv(value) || !self.should_anonymize_player_resource_field(field_name)
         {
             return None;
         }

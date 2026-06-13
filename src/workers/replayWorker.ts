@@ -42,13 +42,23 @@ const postSuccess = <Type extends WorkerRequestType>(
   });
 };
 
+const readInspection = (buffer: ArrayBuffer): ReplayInspection => {
+  const inspection = load_replay(new Uint8Array(buffer)) as ReplayInspection;
+
+  if (!inspection || !Array.isArray(inspection.players)) {
+    throw new Error("Replay inspection did not return players.");
+  }
+
+  return inspection;
+};
+
 const handleMessage = ({ id, type, payload }: WorkerRequest) => {
   try {
     if (type === "inspect") {
       replayLoaded = false;
       clear_replay();
       try {
-        const inspection = load_replay(new Uint8Array(payload.buffer)) as ReplayInspection;
+        const inspection = readInspection(payload.buffer);
         detachBuffer(payload.buffer);
         replayLoaded = true;
         postSuccess(id, type, { inspection });
@@ -73,6 +83,7 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
       }
 
       try {
+        console.log("anonymize options", payload.options);
         const output = anonymize_loaded_replay(JSON.stringify(payload.options));
         const blob = new Blob([output], {
           type: "application/octet-stream",

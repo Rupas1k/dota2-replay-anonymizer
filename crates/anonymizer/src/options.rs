@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 #[serde(default)]
@@ -34,6 +34,7 @@ pub struct AnonymizeOptions {
 
 pub trait AnonymizeRules {
     fn should_anonymize_player_id(&self, player_id: u32) -> bool;
+    fn should_anonymize_steam_id(&self, steam_id: u64) -> bool;
     fn remove_combat_log(&self) -> bool;
     fn remove_match_id(&self) -> bool;
     fn remove_lobby_name(&self) -> bool;
@@ -106,11 +107,23 @@ impl AnonymizeOptions {
             .iter()
             .find(|player| player.player_id == player_id)
     }
+
+    fn player_by_steam_id(&self, steam_id: u64) -> Option<&PlayerOption> {
+        self.players
+            .iter()
+            .find(|player| player.steam_id == steam_id)
+    }
 }
 
 impl AnonymizeRules for AnonymizeOptions {
     fn should_anonymize_player_id(&self, player_id: u32) -> bool {
         self.player_by_player_id(player_id)
+            .map(PlayerOption::should_anonymize)
+            .unwrap_or_else(|| !self.has_player_selection())
+    }
+
+    fn should_anonymize_steam_id(&self, steam_id: u64) -> bool {
+        self.player_by_steam_id(steam_id)
             .map(PlayerOption::should_anonymize)
             .unwrap_or_else(|| !self.has_player_selection())
     }
@@ -223,11 +236,30 @@ impl AnonymizeRules for AnonymizeOptions {
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
 pub struct PlayerOption {
     pub player_id: u32,
+    #[serde(default, deserialize_with = "deserialize_steam_id")]
+    pub steam_id: u64,
     pub anonymize: bool,
 }
 
 impl PlayerOption {
     fn should_anonymize(&self) -> bool {
         self.anonymize
+    }
+}
+
+fn deserialize_steam_id<'de, D>(deserializer: D) -> Result<u64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Value {
+        String(String),
+        Number(u64),
+    }
+
+    match Value::deserialize(deserializer)? {
+        Value::String(value) => value.parse().map_err(serde::de::Error::custom),
+        Value::Number(value) => Ok(value),
     }
 }

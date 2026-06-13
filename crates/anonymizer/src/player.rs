@@ -3,7 +3,7 @@ use source2_demo::prelude::*;
 
 pub const SOURCE_TV_STEAM_ID_THRESHOLD: u64 = 90000000000000000;
 
-pub fn is_source_tv_steam_id(steam_id: u64) -> bool {
+pub fn is_source_tv(steam_id: u64) -> bool {
     steam_id > SOURCE_TV_STEAM_ID_THRESHOLD
 }
 
