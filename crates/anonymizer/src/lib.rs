@@ -520,8 +520,14 @@ impl ReplayAnonymizer {
         ),
         field = ends_with("m_hModel"),
     )]
-    fn ward_model(&mut self, value: u64) -> Option<u64> {
+    fn ward_model(&mut self, entity: &Entity, value: u64) -> Option<u64> {
         if !self.rules.remove_ward_cosmetics() {
+            return None;
+        }
+
+        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
@@ -535,10 +541,16 @@ impl ReplayAnonymizer {
     ),
     field = ends_with("m_flScale"),
     )]
-    fn ward_model_scale(&mut self, value: f32) -> Option<f32> {
+    fn ward_model_scale(&mut self, entity: &Entity, value: f32) -> Option<f32> {
         if !self.rules.remove_ward_cosmetics() {
             return None;
         }
+
+        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return None;
+        }  
 
         self.replace_if_changed(value, 1.0)
     }
