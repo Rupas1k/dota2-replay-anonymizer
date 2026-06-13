@@ -17,12 +17,9 @@ pub enum PlayerTeam {
 }
 
 pub trait PlayerIdentity {
-    fn player_id(&self) -> Option<i32>;
-    fn steam_id(&self) -> u64;
+    fn player_id(&self) -> u32;
 
-    fn has_player_id(&self) -> bool {
-        self.player_id().is_some()
-    }
+    fn steam_id(&self) -> u64;
 
     fn is_source_tv(&self) -> bool {
         is_source_tv_steam_id(self.steam_id())
@@ -36,8 +33,8 @@ pub trait PlayerIdentity {
         !self.is_source_tv() && self.has_steam_id()
     }
 
-    fn matches_player_id(&self, player_id: i32) -> bool {
-        self.player_id() == Some(player_id)
+    fn matches_player_id(&self, player_id: u32) -> bool {
+        self.player_id() == player_id
     }
 
     fn matches_steam_id(&self, steam_id: u64) -> bool {
@@ -57,8 +54,8 @@ pub struct ReplayPlayer {
 }
 
 impl PlayerIdentity for ReplayPlayer {
-    fn player_id(&self) -> Option<i32> {
-        Some(self.player_id as i32)
+    fn player_id(&self) -> u32 {
+        self.player_id
     }
 
     fn steam_id(&self) -> u64 {

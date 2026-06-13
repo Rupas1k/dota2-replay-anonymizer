@@ -118,40 +118,30 @@ impl ReplayAnonymizer {
         self.replace_if_changed(value, T::default())
     }
 
-    fn player_id_from_player_resource_field(&self, field_name: &str) -> Option<i32> {
-        let player_resource_index: i32 = field_name
+    fn player_id_from_player_resource_field(&self, field_name: &str) -> u32 {
+        let player_resource_index: u32 = field_name
             .split('.')
-            .find(|part| part.len() == 4 && part.chars().all(|ch| ch.is_ascii_digit()))?
+            .find(|part| part.len() == 4 && part.chars().all(|ch| ch.is_ascii_digit()))
+            .unwrap()
             .parse()
-            .ok()?;
+            .unwrap();
 
-        Some(player_resource_index << 1)
-    }
-
-    fn player_id_from_controller(&self, entity: &Entity) -> Option<i32> {
-        Some(entity.get_property("m_nPlayerID").ok()?.u32() as i32)
+        player_resource_index << 1
     }
 
     fn should_anonymize_player_resource_field(&self, field_name: &str) -> bool {
-        self.player_id_from_player_resource_field(field_name)
-            .map(|player_id| self.rules.should_anonymize_player_id(player_id))
-            .unwrap_or_else(|| self.rules.should_anonymize_unmatched_player())
+        let player_id = self.player_id_from_player_resource_field(field_name);
+        self.rules.should_anonymize_player_id(player_id)
     }
 
-    fn should_anonymize_controller(&self, entity: &Entity, steam_id: Option<u64>) -> bool {
-        if steam_id.is_some_and(is_source_tv_steam_id) {
+    fn should_anonymize_controller(&self, entity: &Entity) -> bool {
+        let player_id = entity.get_property("m_nPlayerID").unwrap().u32();
+
+        if player_id == 1 {
             return false;
         }
 
-        if let Some(player_id) = self.player_id_from_controller(entity) {
-            if self.rules.should_anonymize_player_id(player_id) {
-                return true;
-            }
-        }
-
-        steam_id
-            .map(|steam_id| self.rules.should_anonymize_steam_id(steam_id))
-            .unwrap_or_else(|| self.rules.should_anonymize_unmatched_player())
+        self.rules.should_anonymize_player_id(player_id)
     }
 }
 
@@ -174,10 +164,6 @@ fn is_particle_to_remove(msg: &CUserMsgParticleManager) -> bool {
 
 #[rewriter]
 impl ReplayAnonymizer {
-    fn should_anonymize_player_id(&self, player_id: i32) -> bool {
-        self.rules.should_anonymize_player_id(player_id)
-    }
-
     #[should_rewrite_entity]
     fn should_rewrite_entity(&mut self, entity: &Entity) -> bool {
         ENTITY_REWRITE_CLASSES.contains(&entity.class().name())
