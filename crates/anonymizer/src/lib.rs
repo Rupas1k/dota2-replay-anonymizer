@@ -614,8 +614,14 @@ impl ReplayAnonymizer {
         class = "CDOTA_BaseNPC_Effigy_Statue",
         field = contains("m_hMyWearables."),
     )]
-    fn effigy_wearable_handle(&mut self, value: u32) -> Option<u32> {
+    fn effigy_wearable_handle(&mut self, entity: &Entity, value: u32) -> Option<u32> {
         if !self.rules.remove_statue_cosmetics() {
+            return None;
+        }
+
+        let player_id = entity.get_property("m_iHeroStatueOwnerPlayerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
