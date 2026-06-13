@@ -1,5 +1,5 @@
 import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "../types";
-import { openDotaAccountIdForPlayer } from "../utils";
+import { openDotaAccountIdForPlayer, steamIdText } from "../utils";
 
 type OpenDotaProPlayerResponse = {
   account_id?: unknown;
@@ -308,7 +308,7 @@ export async function findOpenDotaProProfiles(
 
     const profile = proPlayers.get(accountId);
     if (profile) {
-      profiles.push([player.steam_id, profile]);
+      profiles.push([steamIdText(player.steam_id), profile]);
     }
   }
 

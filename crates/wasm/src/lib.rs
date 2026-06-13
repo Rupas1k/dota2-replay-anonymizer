@@ -1,4 +1,4 @@
-use js_sys::Uint8Array;
+use js_sys::{Array, BigInt, Object, Reflect, Uint8Array};
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
@@ -7,10 +7,57 @@ thread_local! {
     static OUTPUT: RefCell<Option<Vec<u8>>> = const { RefCell::new(None) };
 }
 
-fn read_replay_bytes(input: &[u8]) -> Result<String, JsValue> {
+fn set_property(target: &Object, key: &str, value: &JsValue) -> Result<(), JsValue> {
+    Reflect::set(target, &JsValue::from_str(key), value).map(|_| ())
+}
+
+fn read_replay_bytes(input: &[u8]) -> Result<JsValue, JsValue> {
     let replay = d2_replay_anonymizer::read_replay(input)
         .map_err(|err| JsValue::from_str(&err.to_string()))?;
-    serde_json::to_string(&replay).map_err(|err| JsValue::from_str(&err.to_string()))
+
+    let inspection = Object::new();
+    let players = Array::new();
+
+    for player in replay.players {
+        let value = Object::new();
+        set_property(
+            &value,
+            "player_id",
+            &JsValue::from_f64(player.player_id as f64),
+        )?;
+        set_property(
+            &value,
+            "steam_id",
+            &JsValue::from(BigInt::from(player.steam_id)),
+        )?;
+        set_property(
+            &value,
+            "team_slot",
+            &JsValue::from_f64(player.team_slot as f64),
+        )?;
+        set_property(
+            &value,
+            "team_num",
+            &JsValue::from_f64(player.team_num as f64),
+        )?;
+        set_property(&value, "hero_id", &JsValue::from_f64(player.hero_id as f64))?;
+        set_property(&value, "name", &JsValue::from_str(&player.name))?;
+        players.push(&value);
+    }
+
+    set_property(&inspection, "players", &players)?;
+    set_property(
+        &inspection,
+        "input_bytes",
+        &JsValue::from_f64(replay.input_bytes as f64),
+    )?;
+    set_property(
+        &inspection,
+        "playback_ticks",
+        &JsValue::from_f64(replay.playback_ticks as f64),
+    )?;
+
+    Ok(inspection.into())
 }
 
 fn parse_options(options: &str) -> Result<d2_replay_anonymizer::AnonymizeOptions, JsValue> {
@@ -24,7 +71,7 @@ fn clear_output() {
 }
 
 #[wasm_bindgen]
-pub fn load_replay(input: Vec<u8>) -> Result<String, JsValue> {
+pub fn load_replay(input: Vec<u8>) -> Result<JsValue, JsValue> {
     clear_output();
 
     REPLAY.with(|replay| {

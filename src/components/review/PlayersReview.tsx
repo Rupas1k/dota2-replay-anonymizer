@@ -16,7 +16,7 @@ import {
   type HeroDisplay,
   type PlayerTeamKind,
 } from "../../anonymizer/playerDisplay";
-import { defaultPlayerName, playerKey } from "../../utils";
+import { defaultPlayerName, playerKey, steamIdText } from "../../utils";
 
 function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {
   return (
@@ -28,7 +28,7 @@ function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {
 
 function SteamLink({ player }: { player: ReplayPlayer }) {
   const url = steamProfileUrl(player);
-  const steamId = player.steam_id || "unknown";
+  const steamId = steamIdText(player.steam_id);
 
   if (!url) {
     return <span className="steam-link is-disabled">Steam {steamId}</span>;
@@ -168,7 +168,7 @@ function TeamSection({
             key={playerKey(player)}
             hero={heroForPlayer(player, heroesById)}
             player={player}
-            profile={playerProfiles[player.steam_id]}
+            profile={playerProfiles[steamIdText(player.steam_id)]}
             playerState={playerStateFor(player, playerState)}
             team={team}
             onUpdate={onUpdate}

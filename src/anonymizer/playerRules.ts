@@ -6,7 +6,7 @@ import type {
   ReplayPlayer,
   UiOptions,
 } from "../types";
-import { playerKey } from "../utils";
+import { playerKey, steamIdText } from "../utils";
 
 const normalizeSteamId = (steamId: string) => steamId.trim().toLowerCase();
 
@@ -27,7 +27,7 @@ export function shouldAnonymizePlayer({
   includeSteamIds = steamIdSet(options.includeSteamIds),
   excludeSteamIds = steamIdSet(options.excludeSteamIds),
 }: PlayerRuleContext) {
-  const steamId = normalizeSteamId(player.steam_id);
+  const steamId = normalizeSteamId(steamIdText(player.steam_id));
   if (excludeSteamIds.has(steamId)) {
     return false;
   }
@@ -79,7 +79,7 @@ export function buildPlayerState({
       const anonymize = shouldAnonymizePlayer({
         options,
         player,
-        profile: profiles[player.steam_id],
+        profile: profiles[steamIdText(player.steam_id)],
         includeSteamIds,
         excludeSteamIds,
       });

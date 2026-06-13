@@ -1,6 +1,6 @@
 export type ReplayPlayer = {
   player_id: number | null;
-  steam_id: string;
+  steam_id: bigint;
   team_slot: number;
   team_num: number;
   hero_id: number;
@@ -30,20 +30,11 @@ export type HeroLookup = {
 
 export type PlayerOption = {
   player_id: number | null;
-  steam_id: string;
   anonymize: boolean;
-  replacement_name: string;
-};
-
-export type ChatMessageOption = {
-  index: number;
-  action: "keep" | "delete";
-  replacement_text: string;
 };
 
 export type AnonymizeOptions = {
   players: PlayerOption[];
-  chat_messages: ChatMessageOption[];
   remove_combat_log: boolean;
   remove_match_id: boolean;
   remove_lobby_name: boolean;

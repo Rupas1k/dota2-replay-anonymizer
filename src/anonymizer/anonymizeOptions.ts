@@ -11,9 +11,7 @@ import { playerKey } from "../utils";
 const buildPlayerOption = (player: ReplayPlayer, playerState: PlayerStateMap): PlayerOption => {
   return {
     player_id: player.player_id,
-    steam_id: player.steam_id,
     anonymize: playerState[playerKey(player)]?.anonymize ?? true,
-    replacement_name: "Anonymous",
   };
 };
 
@@ -28,7 +26,6 @@ export const buildAnonymizeOptions = ({
 }): AnonymizeOptions => {
   return {
     players: inspection.players.map((player) => buildPlayerOption(player, playerState)),
-    chat_messages: [],
     remove_combat_log: options.removeCombatLog,
     remove_match_id: options.removeMatchId,
     remove_lobby_name: options.removeLobbyName,

@@ -14,36 +14,7 @@ pub struct ReplayPlayer {
     pub team_num: u32,
     pub hero_id: u32,
     pub name: String,
-    #[serde(with = "serde_u64_string")]
     pub steam_id: u64,
-}
-
-mod serde_u64_string {
-    use serde::{Deserialize, Deserializer, Serializer};
-
-    pub fn serialize<S>(value: &u64, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&value.to_string())
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<u64, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum Value {
-            String(String),
-            Number(u64),
-        }
-
-        match Value::deserialize(deserializer)? {
-            Value::String(value) => value.parse().map_err(serde::de::Error::custom),
-            Value::Number(value) => Ok(value),
-        }
-    }
 }
 
 pub struct Hero<'a> {

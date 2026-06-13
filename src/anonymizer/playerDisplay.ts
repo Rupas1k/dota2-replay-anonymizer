@@ -1,5 +1,5 @@
 import type { HeroLookup, PlayerProfileLookup, ReplayPlayer } from "../types";
-import { playerIdValue } from "../utils";
+import { playerIdValue, steamIdText } from "../utils";
 
 export type PlayerTeamKind = "radiant" | "dire" | "neutral";
 
@@ -65,11 +65,11 @@ export function heroImageUrl(hero: HeroDisplay) {
 }
 
 export function steamProfileUrl(player: ReplayPlayer) {
-  if (!player.steam_id || player.steam_id === "0") {
+  if (player.steam_id <= 0n) {
     return null;
   }
 
-  return `https://steamcommunity.com/profiles/${player.steam_id}`;
+  return `https://steamcommunity.com/profiles/${steamIdText(player.steam_id)}`;
 }
 
 export function proPlayerLabel(profile?: PlayerProfileLookup) {

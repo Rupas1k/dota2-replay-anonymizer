@@ -32,29 +32,22 @@ export const playerIdValue = (player: ReplayPlayer) => player.player_id ?? 0;
 export const defaultPlayerName = (player: ReplayPlayer) =>
   player.name || `Player ${playerIdValue(player)}`;
 
+export const steamIdText = (steamId: bigint) => steamId.toString();
+
 export const playerKey = (player: ReplayPlayer) =>
-  player.player_id == null ? `steam:${player.steam_id}` : `player:${player.player_id}`;
+  player.player_id == null ? `steam:${steamIdText(player.steam_id)}` : `player:${player.player_id}`;
 
-export const steamIdToAccountId = (steamId: string) => {
-  if (!steamId || steamId === "0") {
+export const steamIdToAccountId = (steamId: bigint) => {
+  if (steamId <= 0n) {
     return null;
   }
 
-  try {
-    const id = BigInt(steamId);
-    if (id <= 0n) {
-      return null;
-    }
-
-    const accountId = id > steamId64Base ? id - steamId64Base : id;
-    if (accountId > BigInt(Number.MAX_SAFE_INTEGER)) {
-      return null;
-    }
-
-    return Number(accountId);
-  } catch {
+  const accountId = steamId > steamId64Base ? steamId - steamId64Base : steamId;
+  if (accountId > BigInt(Number.MAX_SAFE_INTEGER)) {
     return null;
   }
+
+  return Number(accountId);
 };
 
 export const openDotaAccountIdForPlayer = (player: ReplayPlayer) => {

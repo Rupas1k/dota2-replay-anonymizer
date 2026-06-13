@@ -48,9 +48,7 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
       replayLoaded = false;
       clear_replay();
       try {
-        const inspection = JSON.parse(
-          load_replay(new Uint8Array(payload.buffer)),
-        ) as ReplayInspection;
+        const inspection = load_replay(new Uint8Array(payload.buffer)) as ReplayInspection;
         detachBuffer(payload.buffer);
         replayLoaded = true;
         postSuccess(id, type, { inspection });
