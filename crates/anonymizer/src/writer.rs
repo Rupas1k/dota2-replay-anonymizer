@@ -672,6 +672,24 @@ impl ReplayAnonymizer {
         Ok(MessageRewrite::Drop)
     }
 
+    #[rewrite_packet_message]
+    fn remove_map_pings(
+        &mut self,
+        msg: CDotaUserMsgLocationPing,
+    ) -> Result<MessageRewrite, ParserError> {
+        if !self.rules.remove_map_pings() {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        let player_id = (msg.player_id() as u32) << 1;
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        Ok(MessageRewrite::Drop)
+    }
+
     #[rewrite_field(class = "CDOTAPlayerPawn", field = any(
         ends_with("m_cellX"),
         ends_with("m_cellY"),
