@@ -103,15 +103,17 @@ impl ReplayAnonymizer {
         self.replace_if_changed(value, T::default())
     }
 
-    fn player_id_from_player_resource_field(&self, field_name: &str) -> u32 {
-        let player_resource_index: u32 = field_name
+    fn vector_index_from_field_name(&self, field_name: &str) -> u32 {
+        field_name
             .split('.')
             .find(|part| part.len() == 4 && part.chars().all(|ch| ch.is_ascii_digit()))
             .unwrap()
             .parse()
-            .unwrap();
+            .unwrap()
+    }
 
-        player_resource_index << 1
+    fn player_id_from_player_resource_field(&self, field_name: &str) -> u32 {
+        self.vector_index_from_field_name(field_name) << 1
     }
 
     fn should_anonymize_player_resource_field(&self, field_name: &str) -> bool {
@@ -488,12 +490,23 @@ impl ReplayAnonymizer {
         ),
         field = ends_with("m_iPlayerSteamID"),
     )]
-    fn team_player_steam_id(&mut self, value: u64) -> Option<u64> {
+    fn team_player_steam_id(
+        &mut self,
+        entity: &Entity,
+        field_name: &str,
+        value: u64,
+    ) -> Option<u64> {
         if !self.rules.remove_player_steam_ids() {
             return None;
         }
 
-        if !self.rules.should_anonymize_steam_id(value) {
+        let team_data_index = self.vector_index_from_field_name(field_name);
+        let player_id = entity
+            .get_property(&format!("m_vecDataTeam.{team_data_index:04}.m_nPlayerID"))
+            .ok()?
+            .u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
