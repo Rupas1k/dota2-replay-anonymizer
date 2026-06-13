@@ -262,8 +262,7 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        if is_source_tv(value) || !self.should_anonymize_player_resource_field(field_name)
-        {
+        if !self.should_anonymize_player_resource_field(field_name) {
             return None;
         }
 
