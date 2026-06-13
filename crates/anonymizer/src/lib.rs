@@ -596,8 +596,14 @@ impl ReplayAnonymizer {
         class = "CDOTA_Unit_Poogie",
         field = ends_with("m_hModel"),
     )]
-    fn poogie_model(&mut self, value: u64) -> Option<u64> {
+    fn poogie_model(&mut self, entity: &Entity, value: u64) -> Option<u64> {
         if !self.rules.remove_poogie_cosmetics() {
+            return None;
+        }
+
+        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
