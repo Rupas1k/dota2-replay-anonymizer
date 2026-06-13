@@ -3,8 +3,8 @@ mod player;
 mod reader;
 mod writer;
 
-pub use options::{AnonymizeOptions, AnonymizeRules, ChatMessageOption, PlayerOption, SteamId};
-pub use player::{PlayerIdentity, PlayerTeam, ReplayPlayer};
+pub use options::{AnonymizeOptions, AnonymizeRules, PlayerOption};
+pub use player::ReplayPlayer;
 pub use reader::ReplayRead;
 use source2_demo::prelude::ParserError;
 

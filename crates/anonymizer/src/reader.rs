@@ -34,10 +34,13 @@ impl ReplayReader {
             return Ok(());
         }
 
-        if self.players.iter().any(|player| player.player_id == player_id) {
+        if self
+            .players
+            .iter()
+            .any(|player| player.player_id == player_id)
+        {
             self.handles.insert(entity.handle());
             return Ok(());
-        
         }
 
         let steam_id: u64 = property!(entity, "m_steamID");
@@ -94,7 +97,7 @@ impl ReplayReader {
             let Some((hero_id, team_slot)) = players.iter().find_map(|player| {
                 let controller = player.controller(ctx).ok()?;
 
-                if controller.get_property("m_nPlayerID").ok()?.u32() == (i as u32) << 1  {
+                if controller.get_property("m_nPlayerID").ok()?.u32() == (i as u32) << 1 {
                     Some((player.hero_id, player.team_slot))
                 } else {
                     None
@@ -103,11 +106,14 @@ impl ReplayReader {
                 continue;
             };
 
-            self.players.iter_mut().find(|x| x.player_id == (i as u32) << 1).map(|x| {
-                x.team_num = team_num;
-                x.team_slot = team_slot;
-                x.hero_id = hero_id;
-            });
+            self.players
+                .iter_mut()
+                .find(|x| x.player_id == (i as u32) << 1)
+                .map(|x| {
+                    x.team_num = team_num;
+                    x.team_slot = team_slot;
+                    x.hero_id = hero_id;
+                });
         }
 
         self.hero_handles_loaded = true;

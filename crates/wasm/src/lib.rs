@@ -74,9 +74,6 @@ pub fn anonymize_loaded_replay(options: &str) -> Result<Uint8Array, JsValue> {
             .as_deref()
             .expect("output was just stored before creating a view");
 
-        // The worker immediately snapshots this view into a Blob, then calls
-        // release_anonymized_replay. No Wasm allocations may occur between
-        // creating the view and taking that snapshot.
         Ok(unsafe { Uint8Array::view(output) })
     })
 }

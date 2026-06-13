@@ -1,11 +1,9 @@
-use crate::player::{is_source_tv_steam_id, PlayerIdentity};
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 #[serde(default)]
 pub struct AnonymizeOptions {
     pub players: Vec<PlayerOption>,
-    pub chat_messages: Vec<ChatMessageOption>,
     pub remove_combat_log: bool,
     pub remove_match_id: bool,
     pub remove_lobby_name: bool,
@@ -35,11 +33,7 @@ pub struct AnonymizeOptions {
 }
 
 pub trait AnonymizeRules {
-    fn should_anonymize_unmatched_player(&self) -> bool;
     fn should_anonymize_player_id(&self, player_id: u32) -> bool;
-    fn should_anonymize_steam_id(&self, steam_id: u64) -> bool;
-    fn replacement_name_for_player_id(&self, player_id: u32) -> &str;
-    fn replacement_name_for_steam_id(&self, steam_id: u64) -> &str;
     fn remove_combat_log(&self) -> bool;
     fn remove_match_id(&self) -> bool;
     fn remove_lobby_name(&self) -> bool;
@@ -72,7 +66,6 @@ impl Default for AnonymizeOptions {
     fn default() -> Self {
         Self {
             players: Vec::new(),
-            chat_messages: Vec::new(),
             remove_combat_log: false,
             remove_match_id: true,
             remove_lobby_name: true,
@@ -111,47 +104,15 @@ impl AnonymizeOptions {
     fn player_by_player_id(&self, player_id: u32) -> Option<&PlayerOption> {
         self.players
             .iter()
-            .find(|player| player.matches_player_id(player_id))
-    }
-
-    fn player_by_steam_id(&self, steam_id: u64) -> Option<&PlayerOption> {
-        self.players
-            .iter()
-            .find(|player| player.matches_steam_id(steam_id))
+            .find(|player| player.player_id == player_id)
     }
 }
 
 impl AnonymizeRules for AnonymizeOptions {
-    fn should_anonymize_unmatched_player(&self) -> bool {
-        !self.has_player_selection()
-    }
-
     fn should_anonymize_player_id(&self, player_id: u32) -> bool {
         self.player_by_player_id(player_id)
             .map(PlayerOption::should_anonymize)
             .unwrap_or_else(|| !self.has_player_selection())
-    }
-
-    fn should_anonymize_steam_id(&self, steam_id: u64) -> bool {
-        if steam_id == 0 || is_source_tv_steam_id(steam_id) {
-            return false;
-        }
-
-        self.player_by_steam_id(steam_id)
-            .map(PlayerOption::should_anonymize_by_identifier)
-            .unwrap_or_else(|| !self.has_player_selection())
-    }
-
-    fn replacement_name_for_player_id(&self, player_id: u32) -> &str {
-        self.player_by_player_id(player_id)
-            .map(|player| player.replacement_name.as_str())
-            .unwrap_or("Anonymous")
-    }
-
-    fn replacement_name_for_steam_id(&self, steam_id: u64) -> &str {
-        self.player_by_steam_id(steam_id)
-            .map(|player| player.replacement_name.as_str())
-            .unwrap_or("Anonymous")
     }
 
     fn remove_combat_log(&self) -> bool {
@@ -262,78 +223,11 @@ impl AnonymizeRules for AnonymizeOptions {
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
 pub struct PlayerOption {
     pub player_id: u32,
-    pub steam_id: SteamId,
     pub anonymize: bool,
-    #[serde(default)]
-    pub replacement_name: String,
 }
 
 impl PlayerOption {
     fn should_anonymize(&self) -> bool {
         self.anonymize
     }
-
-    fn should_anonymize_by_identifier(&self) -> bool {
-        self.is_anonymizable() && self.anonymize
-    }
-}
-
-impl PlayerIdentity for PlayerOption {
-    fn player_id(&self) -> u32 {
-        self.player_id
-    }
-
-    fn steam_id(&self) -> u64 {
-        self.steam_id.get()
-    }
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
-pub struct SteamId(u64);
-
-impl SteamId {
-    pub fn get(self) -> u64 {
-        self.0
-    }
-}
-
-impl From<SteamId> for u64 {
-    fn from(value: SteamId) -> Self {
-        value.get()
-    }
-}
-
-impl<'de> Deserialize<'de> for SteamId {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum Value {
-            String(String),
-            Number(u64),
-        }
-
-        match Value::deserialize(deserializer)? {
-            Value::String(value) => value.parse().map(Self).map_err(serde::de::Error::custom),
-            Value::Number(value) => Ok(Self(value)),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum ChatMessageAction {
-    Keep,
-    Replace,
-    Delete,
-}
-
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
-pub struct ChatMessageOption {
-    pub index: u32,
-    pub action: ChatMessageAction,
-    #[serde(default)]
-    pub replacement_text: String,
 }

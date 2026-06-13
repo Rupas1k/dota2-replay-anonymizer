@@ -7,41 +7,6 @@ pub fn is_source_tv_steam_id(steam_id: u64) -> bool {
     steam_id > SOURCE_TV_STEAM_ID_THRESHOLD
 }
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum PlayerTeam {
-    Radiant,
-    Dire,
-    #[default]
-    Spectator,
-}
-
-pub trait PlayerIdentity {
-    fn player_id(&self) -> u32;
-
-    fn steam_id(&self) -> u64;
-
-    fn is_source_tv(&self) -> bool {
-        is_source_tv_steam_id(self.steam_id())
-    }
-
-    fn has_steam_id(&self) -> bool {
-        self.steam_id() != 0
-    }
-
-    fn is_anonymizable(&self) -> bool {
-        !self.is_source_tv() && self.has_steam_id()
-    }
-
-    fn matches_player_id(&self, player_id: u32) -> bool {
-        self.player_id() == player_id
-    }
-
-    fn matches_steam_id(&self, steam_id: u64) -> bool {
-        self.steam_id() == steam_id
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ReplayPlayer {
     pub player_id: u32,
@@ -51,20 +16,6 @@ pub struct ReplayPlayer {
     pub name: String,
     #[serde(with = "serde_u64_string")]
     pub steam_id: u64,
-}
-
-impl PlayerIdentity for ReplayPlayer {
-    fn player_id(&self) -> u32 {
-        self.player_id
-    }
-
-    fn steam_id(&self) -> u64 {
-        self.steam_id
-    }
-
-    fn is_source_tv(&self) -> bool {
-        is_source_tv_steam_id(self.steam_id)
-    }
 }
 
 mod serde_u64_string {

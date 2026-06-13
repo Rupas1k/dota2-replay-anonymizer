@@ -175,14 +175,13 @@ impl ReplayAnonymizer {
                     return Ok(());
                 }
 
-                let should_anonymize_steam = self.rules.should_anonymize_steam_id(steam_id);
-                if !should_anonymize_steam {
+                let player_id = (player.userid() as u32) << 1;
+                if !self.rules.should_anonymize_player_id(player_id) {
                     return Ok(());
                 }
 
                 if self.rules.remove_player_names() {
-                    let replacement_name = self.rules.replacement_name_for_steam_id(steam_id);
-                    player.name = replacement_name.to_string().into();
+                    player.name = ANONYMOUS_NAME.to_string().into();
                 }
 
                 if self.rules.remove_player_steam_ids() {
@@ -259,7 +258,8 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        if is_source_tv_steam_id(value) || !self.should_anonymize_player_resource_field(field_name) {
+        if is_source_tv_steam_id(value) || !self.should_anonymize_player_resource_field(field_name)
+        {
             return None;
         }
 
@@ -441,28 +441,28 @@ impl ReplayAnonymizer {
     #[rewrite_field(class = "CDOTATeam", field = "m_szTeamname")]
     fn team_name(&mut self, entity: &Entity, value: String) -> Option<String> {
         if !is_player_team(entity) || !self.rules.remove_team_name() {
-             return None;
-         }
+            return None;
+        }
 
-         self.zero(value)
+        self.zero(value)
     }
 
     #[rewrite_field(class = "CDOTATeam", field = "m_szTag")]
     fn team_tag(&mut self, entity: &Entity, value: String) -> Option<String> {
         if !is_player_team(entity) || !self.rules.remove_team_tag() {
-             return None;
-         }
+            return None;
+        }
 
-         self.zero(value)
+        self.zero(value)
     }
 
     #[rewrite_field(class = "CDOTATeam", field = "m_unTournamentTeamID")]
     fn team_id(&mut self, entity: &Entity, value: u32) -> Option<u32> {
         if !is_player_team(entity) || !self.rules.remove_tournament_team_id() {
-             return None;
-         }
+            return None;
+        }
 
-         self.zero(value)
+        self.zero(value)
     }
 
     #[rewrite_field(
@@ -537,7 +537,7 @@ impl ReplayAnonymizer {
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
-        }  
+        }
 
         self.replace_if_changed(value, 1.0)
     }
@@ -606,7 +606,10 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        let player_id = entity.get_property("m_iHeroStatueOwnerPlayerID").ok()?.u32();
+        let player_id = entity
+            .get_property("m_iHeroStatueOwnerPlayerID")
+            .ok()?
+            .u32();
 
         if !self.rules.should_anonymize_player_id(player_id) {
             return None;
@@ -661,7 +664,7 @@ impl ReplayAnonymizer {
         }
 
         self.particles_seen += 1;
-    
+
         Ok(MessageRewrite::Drop)
     }
 }
