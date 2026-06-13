@@ -35,10 +35,6 @@ export const defaultPlayerName = (player: ReplayPlayer) =>
 export const playerKey = (player: ReplayPlayer) =>
   player.player_id == null ? `steam:${player.steam_id}` : `player:${player.player_id}`;
 
-export const isLockedPlayer = (player: ReplayPlayer) => {
-  return player.steam_id === "0";
-};
-
 export const steamIdToAccountId = (steamId: string) => {
   if (!steamId || steamId === "0") {
     return null;

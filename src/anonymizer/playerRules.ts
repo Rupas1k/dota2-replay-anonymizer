@@ -6,7 +6,7 @@ import type {
   ReplayPlayer,
   UiOptions,
 } from "../types";
-import { isLockedPlayer, playerKey } from "../utils";
+import { playerKey } from "../utils";
 
 const normalizeSteamId = (steamId: string) => steamId.trim().toLowerCase();
 
@@ -27,10 +27,6 @@ export function shouldAnonymizePlayer({
   includeSteamIds = steamIdSet(options.includeSteamIds),
   excludeSteamIds = steamIdSet(options.excludeSteamIds),
 }: PlayerRuleContext) {
-  if (isLockedPlayer(player)) {
-    return false;
-  }
-
   const steamId = normalizeSteamId(player.steam_id);
   if (excludeSteamIds.has(steamId)) {
     return false;

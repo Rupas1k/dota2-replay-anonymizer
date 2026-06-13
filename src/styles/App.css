@@ -782,7 +782,7 @@ textarea {
   background: #0f161d;
   cursor: pointer;
 
-  &:not(.is-locked-player):hover {
+  &:hover {
     border-color: rgba(102, 168, 232, 0.3);
   }
 
@@ -803,11 +803,6 @@ textarea {
 
   &.is-neutral {
     grid-template-columns: 22px minmax(0, 1fr);
-  }
-
-  &.is-locked-player {
-    opacity: 0.82;
-    cursor: default;
   }
 
   &.is-pro {

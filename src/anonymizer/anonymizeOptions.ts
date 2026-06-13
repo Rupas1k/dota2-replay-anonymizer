@@ -6,16 +6,14 @@ import type {
   ReplayPlayer,
   UiOptions,
 } from "../types";
-import { isLockedPlayer, playerKey } from "../utils";
+import { playerKey } from "../utils";
 
 const buildPlayerOption = (player: ReplayPlayer, playerState: PlayerStateMap): PlayerOption => {
-  const locked = isLockedPlayer(player);
-
   return {
     player_id: player.player_id,
     steam_id: player.steam_id,
-    anonymize: locked ? false : (playerState[playerKey(player)]?.anonymize ?? true),
-    replacement_name: locked ? player.name : "Anonymous",
+    anonymize: playerState[playerKey(player)]?.anonymize ?? true,
+    replacement_name: "Anonymous",
   };
 };
 

@@ -16,7 +16,7 @@ import {
   type HeroDisplay,
   type PlayerTeamKind,
 } from "../../anonymizer/playerDisplay";
-import { defaultPlayerName, isLockedPlayer, playerKey } from "../../utils";
+import { defaultPlayerName, playerKey } from "../../utils";
 
 function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {
   return (
@@ -63,15 +63,12 @@ function PlayerCard({
   onUpdate: (key: string, patch: Partial<PlayerState>) => void;
 }) {
   const playerName = defaultPlayerName(player);
-  const locked = isLockedPlayer(player);
   const proLabel = proPlayerLabel(profile);
-  const cardClassName = `player-card is-${team}${locked ? " is-locked-player" : ""}${proLabel ? " is-pro" : ""}`;
+  const cardClassName = `player-card is-${team}${proLabel ? " is-pro" : ""}`;
   const proNameMatchesReplayName =
     profile?.proName && normalizePlayerName(profile.proName) === normalizePlayerName(playerName);
   const togglePlayer = () => {
-    if (!locked) {
-      onUpdate(playerKey(player), { anonymize: !playerState.anonymize });
-    }
+    onUpdate(playerKey(player), { anonymize: !playerState.anonymize });
   };
   const handleCardClick = (event: MouseEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
@@ -94,10 +91,9 @@ function PlayerCard({
   return (
     <article
       className={cardClassName}
-      tabIndex={locked ? undefined : 0}
+      tabIndex={0}
       role="checkbox"
       aria-checked={playerState.anonymize}
-      aria-disabled={locked || undefined}
       aria-label={`Anonymize ${playerName}`}
       onClick={handleCardClick}
       onKeyDown={handleCardKeyDown}
@@ -106,7 +102,6 @@ function PlayerCard({
         <input
           type="checkbox"
           checked={playerState.anonymize}
-          disabled={locked}
           onChange={(event) => onUpdate(playerKey(player), { anonymize: event.target.checked })}
         />
       </label>
