@@ -29,7 +29,7 @@ pub struct AnonymizeOptions {
     pub remove_selected_hero_badge: bool,
     pub remove_player_camera_movements: bool,
     pub remove_player_mouse_movements: bool,
-    pub remove_player_click_movements: bool,
+    pub remove_player_clicks: bool,
 }
 
 pub trait AnonymizeRules {
@@ -60,7 +60,7 @@ pub trait AnonymizeRules {
     fn remove_selected_hero_badge(&self) -> bool;
     fn remove_player_camera_movements(&self) -> bool;
     fn remove_player_mouse_movements(&self) -> bool;
-    fn remove_player_click_movements(&self) -> bool;
+    fn remove_player_clicks(&self) -> bool;
 }
 
 impl Default for AnonymizeOptions {
@@ -92,7 +92,7 @@ impl Default for AnonymizeOptions {
             remove_selected_hero_badge: true,
             remove_player_camera_movements: false,
             remove_player_mouse_movements: false,
-            remove_player_click_movements: false,
+            remove_player_clicks: false,
         }
     }
 }
@@ -228,8 +228,8 @@ impl AnonymizeRules for AnonymizeOptions {
         self.remove_player_mouse_movements
     }
 
-    fn remove_player_click_movements(&self) -> bool {
-        self.remove_player_click_movements
+    fn remove_player_clicks(&self) -> bool {
+        self.remove_player_clicks
     }
 }
 

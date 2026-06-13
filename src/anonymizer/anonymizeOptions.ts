@@ -52,6 +52,6 @@ export const buildAnonymizeOptions = ({
     remove_selected_hero_badge: options.removeDotaPlusBadges,
     remove_player_camera_movements: options.removeCameraMovements,
     remove_player_mouse_movements: options.removeMouseMovements,
-    remove_player_click_movements: options.removeClickMovements,
+    remove_player_clicks: options.removeClickMovements,
   };
 };

@@ -61,7 +61,7 @@ export type AnonymizeOptions = {
   remove_selected_hero_badge: boolean;
   remove_player_camera_movements: boolean;
   remove_player_mouse_movements: boolean;
-  remove_player_click_movements: boolean;
+  remove_player_clicks: boolean;
 };
 
 export type WorkerRequestPayloads = {
