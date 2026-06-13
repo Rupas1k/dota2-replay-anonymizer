@@ -679,50 +679,15 @@ impl ReplayAnonymizer {
     }
 }
 
-pub fn anonymize_replay_bytes(input: &[u8]) -> Result<Vec<u8>, ParserError> {
-    let output = Cursor::new(Vec::new());
-    let mut writer = DemoWriter::from_slice(input, output)?;
-    writer.register_rewriter::<ReplayAnonymizer>();
-
-    writer.run()?;
-    let (_parser, output) = writer.into_parts();
-    Ok(output.into_inner())
-}
-
 pub fn anonymize_replay_bytes_with_options(
     input: &[u8],
     options: AnonymizeOptions,
 ) -> Result<Vec<u8>, ParserError> {
     let output = Cursor::new(Vec::new());
-    let output = anonymize_replay_to_writer_with_options(input, options, output)?;
-    Ok(output.into_inner())
-}
-
-pub fn anonymize_replay_to_writer_with_options<W>(
-    input: &[u8],
-    options: AnonymizeOptions,
-    output: W,
-) -> Result<W, ParserError>
-where
-    W: Write + Seek,
-{
     let mut writer = DemoWriter::from_slice(input, output)?;
     writer.add_rewriter(ReplayAnonymizer::new(options));
 
     writer.run()?;
-    let (_parser, output) = writer.into_parts();
-    Ok(output)
-}
-
-pub fn anonymize_replay<T, O>(input: T, output: O) -> Result<O, ParserError>
-where
-    T: Read + Seek,
-    O: Write + Seek,
-{
-    let mut writer = DemoWriter::from_reader(input, output)?;
-    writer.register_rewriter::<ReplayAnonymizer>();
-
-    writer.run()?;
-    let (_parser, output) = writer.into_parts();
-    Ok(output)
+    let (_, output) = writer.into_parts();
+    Ok(output.into_inner())
 }
