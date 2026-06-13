@@ -30,7 +30,7 @@ const ENTITY_REWRITE_CLASSES: &[&str] = &[
     "CDOTA_Unit_Poogie",
     "CDOTA_BaseNPC_Effigy_Statue",
     "CDOTATeam",
-    "CDOTAPlayerPawn"
+    "CDOTAPlayerPawn",
 ];
 
 const ENTITY_TRACK_CLASSES: &[&str] = &[
@@ -40,7 +40,7 @@ const ENTITY_TRACK_CLASSES: &[&str] = &[
     "CDOTA_Unit_Poogie",
     "CDOTA_DataRadiant",
     "CDOTA_DataDire",
-    "CDOTAPlayerPawn"
+    "CDOTAPlayerPawn",
 ];
 
 struct ReplayAnonymizer {
@@ -540,11 +540,11 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(
-    class = any(
-        "CDOTA_NPC_Observer_Ward",
-        "CDOTA_NPC_Observer_Ward_TrueSight"
-    ),
-    field = ends_with("m_flScale"),
+        class = any(
+            "CDOTA_NPC_Observer_Ward",
+            "CDOTA_NPC_Observer_Ward_TrueSight"
+        ),
+        field = ends_with("m_flScale"),
     )]
     fn ward_model_scale(&mut self, entity: &Entity, value: f32) -> Option<f32> {
         if !self.rules.remove_ward_cosmetics() {
@@ -758,7 +758,12 @@ impl ReplayAnonymizer {
         ends_with("m_cellY"),
         ends_with("m_cellY")
     ))]
-    fn remove_camera_movements(&mut self, ctx: &Context, entity: &Entity, value: i32) -> Option<i32> {
+    fn remove_camera_movements(
+        &mut self,
+        ctx: &Context,
+        entity: &Entity,
+        value: i32,
+    ) -> Option<i32> {
         if !self.rules.remove_player_camera_movements() {
             return None;
         }
@@ -778,7 +783,12 @@ impl ReplayAnonymizer {
         ends_with("m_vecY"),
         ends_with("m_vecZ")
     ))]
-    fn remove_camera_movements_vec(&mut self, ctx: &Context, entity: &Entity, value: f32) -> Option<f32> {
+    fn remove_camera_movements_vec(
+        &mut self,
+        ctx: &Context,
+        entity: &Entity,
+        value: f32,
+    ) -> Option<f32> {
         if !self.rules.remove_player_camera_movements() {
             return None;
         }
