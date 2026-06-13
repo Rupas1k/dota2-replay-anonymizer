@@ -564,6 +564,12 @@ impl ReplayAnonymizer {
             return None;
         }
 
+        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return None;
+        }
+
         let model = DotaTeam::from_entity(entity)?.courier_model(is_flying_courier(entity));
         self.replace_if_changed(value, model)
     }
@@ -572,8 +578,14 @@ impl ReplayAnonymizer {
         class = "CDOTA_Unit_Courier",
         field = ends_with("m_flScale"),
     )]
-    fn courier_model_scale(&mut self, value: f32) -> Option<f32> {
+    fn courier_model_scale(&mut self, entity: &Entity, value: f32) -> Option<f32> {
         if !self.rules.remove_courier_cosmetics() {
+            return None;
+        }
+
+        let player_id = entity.get_property("m_nPlayerOwnerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
             return None;
         }
 
