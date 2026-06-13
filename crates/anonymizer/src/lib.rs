@@ -243,11 +243,7 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        let steam_id = entity
-            .get_property("m_steamID")
-            .ok()
-            .map(|value| value.u64());
-        if !self.should_anonymize_controller(entity, steam_id) {
+        if !self.should_anonymize_controller(entity) {
             return None;
         }
 
@@ -260,7 +256,7 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        if !self.should_anonymize_controller(entity, Some(value)) {
+        if !self.should_anonymize_controller(entity) {
             return None;
         }
 
