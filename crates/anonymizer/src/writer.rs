@@ -34,6 +34,7 @@ const ENTITY_REWRITE_CLASSES: &[&str] = &[
 
 const ENTITY_TRACK_CLASSES: &[&str] = &[
     "CDOTAGamerulesProxy",
+    "CDOTAPlayerController",
     "CDOTA_Unit_Courier",
     "CDOTA_Unit_Poogie",
 ];
