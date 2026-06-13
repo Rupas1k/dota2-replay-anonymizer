@@ -219,6 +219,73 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(
+        class = "CDOTAGamerulesProxy",
+        field = ends_with("m_unMatchID64"),
+    )]
+    fn match_id(&mut self, value: u32) -> Option<u32> {
+        if !self.rules.remove_match_id() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(
+        class = "CDOTAGamerulesProxy",
+        field = ends_with("m_lobbyGameName"),
+    )]
+    fn lobby_name(&mut self, value: String) -> Option<String> {
+        if !self.rules.remove_lobby_name() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(class = "CDOTATeam", field = "m_szTeamname")]
+    fn team_name(&mut self, entity: &Entity, value: String) -> Option<String> {
+        if !is_player_team(entity) || !self.rules.remove_team_name() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(class = "CDOTATeam", field = "m_szTag")]
+    fn team_tag(&mut self, entity: &Entity, value: String) -> Option<String> {
+        if !is_player_team(entity) || !self.rules.remove_team_tag() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(class = "CDOTATeam", field = "m_unTournamentTeamID")]
+    fn team_id(&mut self, entity: &Entity, value: u32) -> Option<u32> {
+        if !is_player_team(entity) || !self.rules.remove_tournament_team_id() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(
+        class = "CDOTATeam",
+        field = any(
+            "m_ulTeamLogo",
+            "m_ulTeamBaseLogo",
+            "m_ulTeamBannerLogo",
+        ),
+    )]
+    fn team_logo(&mut self, entity: &Entity, value: u64) -> Option<u64> {
+        if !is_player_team(entity) || !self.rules.remove_team_logo() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(
         class = "CDOTA_PlayerResource",
         field = ends_with("m_iszPlayerName"),
     )]
@@ -395,106 +462,6 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(
-        class = "CDOTAGamerulesProxy",
-        field = ends_with("m_unMatchID64"),
-    )]
-    fn match_id(&mut self, value: u32) -> Option<u32> {
-        if !self.rules.remove_match_id() {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_field(
-        class = "CDOTAGamerulesProxy",
-        field = ends_with("m_lobbyGameName"),
-    )]
-    fn lobby_name(&mut self, value: String) -> Option<String> {
-        if !self.rules.remove_lobby_name() {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_packet_messages]
-    fn promo(
-        &mut self,
-        ctx: &Context,
-        messages: &mut Vec<PacketMessage>,
-    ) -> Result<(), ParserError> {
-        if self.messages_added > 0 {
-            return Ok(());
-        }
-
-        let Ok(grp) = ctx.entities().get_by_class_name("CDOTAGamerulesProxy") else {
-            return Ok(());
-        };
-
-        let game_state = grp.get_property("m_pGameRules.m_nGameState")?.i32();
-        if game_state != DotaGameState::DotaGamerulesStatePreGame as i32 {
-            return Ok(());
-        }
-
-        let mut msg = CDotaUserMsgChatMessage::default();
-        msg.message_text = "https://github.com/Rupas1k".to_string().into();
-        msg.channel_type = 11.into();
-
-        messages.push(PacketMessage::new(
-            EDotaUserMessages::DotaUmChatMessage as i32,
-            msg.encode_to_vec(),
-        ));
-
-        self.messages_added += 1;
-
-        Ok(())
-    }
-
-    #[rewrite_field(class = "CDOTATeam", field = "m_szTeamname")]
-    fn team_name(&mut self, entity: &Entity, value: String) -> Option<String> {
-        if !is_player_team(entity) || !self.rules.remove_team_name() {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_field(class = "CDOTATeam", field = "m_szTag")]
-    fn team_tag(&mut self, entity: &Entity, value: String) -> Option<String> {
-        if !is_player_team(entity) || !self.rules.remove_team_tag() {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_field(class = "CDOTATeam", field = "m_unTournamentTeamID")]
-    fn team_id(&mut self, entity: &Entity, value: u32) -> Option<u32> {
-        if !is_player_team(entity) || !self.rules.remove_tournament_team_id() {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_field(
-        class = "CDOTATeam",
-        field = any(
-            "m_ulTeamLogo",
-            "m_ulTeamBaseLogo",
-            "m_ulTeamBannerLogo",
-        ),
-    )]
-    fn team_logo(&mut self, entity: &Entity, value: u64) -> Option<u64> {
-        if !is_player_team(entity) || !self.rules.remove_team_logo() {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_field(
         class = any(
             "CDOTA_DataRadiant",
             "CDOTA_DataDire",
@@ -522,6 +489,86 @@ impl ReplayAnonymizer {
         }
 
         self.zero(value)
+    }
+
+    #[rewrite_field(
+        class = "CDOTAPlayerController",
+        field = starts_with("m_iCursor"),
+    )]
+    fn remove_cursor_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
+        if !self.rules.remove_player_mouse_movements() {
+            return None;
+        }
+
+        if !self.should_anonymize_controller(entity) {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(
+        class = "CDOTAPlayerPawn",
+        field = any(
+            ends_with("m_cellX"),
+            ends_with("m_cellY"),
+            ends_with("m_cellY"),
+        ),
+    )]
+    fn remove_camera_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
+        if !self.rules.remove_player_camera_movements() {
+            return None;
+        }
+
+        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return None;
+        }
+
+        self.replace_if_changed(value, 128)
+    }
+
+    #[rewrite_field(
+        class = "CDOTAPlayerPawn",
+        field = any(
+            ends_with("m_vecX"),
+            ends_with("m_vecY"),
+            ends_with("m_vecZ"),
+        ),
+    )]
+    fn remove_camera_movements_vec(&mut self, entity: &Entity, value: f32) -> Option<f32> {
+        if !self.rules.remove_player_camera_movements() {
+            return None;
+        }
+
+        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_packet_message]
+    fn remove_clicks(
+        &mut self,
+        ctx: &Context,
+        msg: CDotaUserMsgSpectatorPlayerUnitOrders,
+    ) -> Result<MessageRewrite, ParserError> {
+        if !self.rules.remove_player_clicks() {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        let controller = ctx.entities().get_by_index(msg.entindex() as usize)?;
+        let player_id = controller.get_property("m_nPlayerID")?.u32();
+
+        if !self.rules.should_anonymize_player_id(player_id) {
+            return Ok(MessageRewrite::Keep);
+        }
+
+        Ok(MessageRewrite::Drop)
     }
 
     #[rewrite_field(
@@ -715,26 +762,6 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_packet_message]
-    fn remove_clicks(
-        &mut self,
-        ctx: &Context,
-        msg: CDotaUserMsgSpectatorPlayerUnitOrders,
-    ) -> Result<MessageRewrite, ParserError> {
-        if !self.rules.remove_player_clicks() {
-            return Ok(MessageRewrite::Keep);
-        }
-
-        let controller = ctx.entities().get_by_index(msg.entindex() as usize)?;
-        let player_id = controller.get_property("m_nPlayerID")?.u32();
-
-        if !self.rules.should_anonymize_player_id(player_id) {
-            return Ok(MessageRewrite::Keep);
-        }
-
-        Ok(MessageRewrite::Drop)
-    }
-
-    #[rewrite_packet_message]
     fn remove_combat_log(
         &mut self,
         _msg: CMsgDotaCombatLogEntry,
@@ -744,66 +771,6 @@ impl ReplayAnonymizer {
         }
 
         Ok(MessageRewrite::Drop)
-    }
-
-    #[rewrite_field(
-        class = "CDOTAPlayerController",
-        field = starts_with("m_iCursor"),
-    )]
-    fn remove_cursor_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
-        if !self.rules.remove_player_mouse_movements() {
-            return None;
-        }
-
-        if !self.should_anonymize_controller(entity) {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_field(
-        class = "CDOTAPlayerPawn",
-        field = any(
-            ends_with("m_cellX"),
-            ends_with("m_cellY"),
-            ends_with("m_cellY"),
-        ),
-    )]
-    fn remove_camera_movements(&mut self, entity: &Entity, value: i32) -> Option<i32> {
-        if !self.rules.remove_player_camera_movements() {
-            return None;
-        }
-
-        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
-
-        if !self.rules.should_anonymize_player_id(player_id) {
-            return None;
-        }
-
-        self.replace_if_changed(value, 128)
-    }
-
-    #[rewrite_field(
-        class = "CDOTAPlayerPawn",
-        field = any(
-            ends_with("m_vecX"),
-            ends_with("m_vecY"),
-            ends_with("m_vecZ"),
-        ),
-    )]
-    fn remove_camera_movements_vec(&mut self, entity: &Entity, value: f32) -> Option<f32> {
-        if !self.rules.remove_player_camera_movements() {
-            return None;
-        }
-
-        let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
-
-        if !self.rules.should_anonymize_player_id(player_id) {
-            return None;
-        }
-
-        self.zero(value)
     }
 
     #[rewrite_packet_message]
@@ -818,6 +785,39 @@ impl ReplayAnonymizer {
         self.particles_seen += 1;
 
         Ok(MessageRewrite::Drop)
+    }
+
+    #[rewrite_packet_messages]
+    fn promo(
+        &mut self,
+        ctx: &Context,
+        messages: &mut Vec<PacketMessage>,
+    ) -> Result<(), ParserError> {
+        if self.messages_added > 0 {
+            return Ok(());
+        }
+
+        let Ok(grp) = ctx.entities().get_by_class_name("CDOTAGamerulesProxy") else {
+            return Ok(());
+        };
+
+        let game_state = grp.get_property("m_pGameRules.m_nGameState")?.i32();
+        if game_state != DotaGameState::DotaGamerulesStatePreGame as i32 {
+            return Ok(());
+        }
+
+        let mut msg = CDotaUserMsgChatMessage::default();
+        msg.message_text = "https://github.com/Rupas1k".to_string().into();
+        msg.channel_type = 11.into();
+
+        messages.push(PacketMessage::new(
+            EDotaUserMessages::DotaUmChatMessage as i32,
+            msg.encode_to_vec(),
+        ));
+
+        self.messages_added += 1;
+
+        Ok(())
     }
 }
 
