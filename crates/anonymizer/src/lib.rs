@@ -13,6 +13,17 @@ pub fn read_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
     reader::read_replay(input)
 }
 
+pub fn quick_scan_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
+    reader::quick_scan_replay(input)
+}
+
+pub fn quick_scan_replay_reader<R>(input: R) -> Result<ReplayRead, ParserError>
+where
+    R: Read + Seek,
+{
+    reader::quick_scan_replay_reader(input)
+}
+
 pub fn anonymize_replay_bytes_with_options(
     input: &[u8],
     options: AnonymizeOptions,

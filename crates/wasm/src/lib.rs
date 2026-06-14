@@ -62,6 +62,11 @@ fn read_replay(input: &[u8]) -> Result<JsValue, JsValue> {
     inspection_to_js(replay)
 }
 
+fn quick_scan_replay(input: &[u8]) -> Result<JsValue, JsValue> {
+    let replay = d2_replay_anonymizer::quick_scan_replay(input).map_err(js_error)?;
+    inspection_to_js(replay)
+}
+
 fn parse_options(options: &str) -> Result<AnonymizeOptions, JsValue> {
     serde_json::from_str(options).map_err(js_error)
 }
@@ -93,6 +98,18 @@ pub fn inspect_loaded_replay() -> Result<JsValue, JsValue> {
             .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
 
         read_replay(input)
+    })
+}
+
+#[wasm_bindgen]
+pub fn quick_scan_loaded_replay() -> Result<JsValue, JsValue> {
+    REPLAY.with(|replay| {
+        let replay = replay.borrow();
+        let input = replay
+            .as_deref()
+            .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
+
+        quick_scan_replay(input)
     })
 }
 

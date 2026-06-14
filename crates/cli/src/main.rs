@@ -10,20 +10,11 @@ use std::{
 
 use anyhow::{anyhow, bail, Context, Result};
 use d2_replay_anonymizer::{
-    anonymize_replay_with_options, AnonymizeOptions, PlayerOption, PlayerSelectionMode,
+    anonymize_replay_with_options, quick_scan_replay_reader, AnonymizeOptions, PlayerOption,
+    PlayerSelectionMode,
 };
-use source2_demo::prelude::*;
 
 const SOURCE_TV_STEAM_ID_THRESHOLD: u64 = 90000000000000000;
-
-#[derive(Default)]
-struct EntityStateObserver;
-
-impl Observer for EntityStateObserver {
-    fn interests(&self) -> Interests {
-        Interests::ENTITY_STATE
-    }
-}
 
 struct ReplayJob {
     input: PathBuf,
@@ -221,19 +212,15 @@ fn add_steam_id_overrides(input: &Path, options: &mut AnonymizeOptions) -> Resul
         return Ok(());
     }
 
-    let input = BufReader::new(
+    let replay = quick_scan_replay_reader(BufReader::new(
         File::open(input).with_context(|| format!("failed to open {}", input.display()))?,
-    );
-    let mut parser = Parser::from_reader(input)?;
-    parser.register_observer::<EntityStateObserver>();
-    parser.jump_to_tick(parser.replay_info().playback_ticks() as u32)?;
-
-    let players = parser
-        .context()
-        .entities()
-        .iter()
-        .filter(|entity| entity.class().name() == "CDOTAPlayerController")
-        .filter_map(player_identity)
+    ))
+    .with_context(|| format!("failed to inspect {}", input.display()))?;
+    let players = replay
+        .players
+        .into_iter()
+        .filter(|player| player.steam_id != 0 && player.steam_id <= SOURCE_TV_STEAM_ID_THRESHOLD)
+        .map(|player| (player.player_id, player.steam_id))
         .collect::<Vec<_>>();
 
     if options.players.is_empty() {
@@ -253,17 +240,6 @@ fn add_steam_id_overrides(input: &Path, options: &mut AnonymizeOptions) -> Resul
     }
 
     Ok(())
-}
-
-fn player_identity(entity: &Entity) -> Option<(u32, u64)> {
-    let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
-    let steam_id = entity.get_property("m_steamID").ok()?.u64();
-
-    if steam_id == 0 || steam_id > SOURCE_TV_STEAM_ID_THRESHOLD {
-        None
-    } else {
-        Some((player_id, steam_id))
-    }
 }
 
 fn upsert_player_option(
