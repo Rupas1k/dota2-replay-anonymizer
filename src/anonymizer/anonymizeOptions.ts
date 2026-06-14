@@ -21,17 +21,8 @@ const steamIds = (values: string[]) => values.map((value) => value.trim()).filte
 const playerSelectionMode = (options: UiOptions) =>
   options.playerSelectionMode === "excludeAll" ? "exclude_all" : "include_all";
 
-export const buildAnonymizeOptions = ({
-  inspection,
-  playerState,
-  options,
-}: {
-  inspection: ReplayInspection;
-  playerState: PlayerStateMap;
-  options: UiOptions;
-}): AnonymizeOptions => {
+const buildOptionSettings = (options: UiOptions): Omit<AnonymizeOptions, "players"> => {
   return {
-    players: inspection.players.map((player) => buildPlayerOption(player, playerState)),
     player_selection_mode: playerSelectionMode(options),
     include_steam_ids: steamIds(options.includeSteamIds),
     exclude_steam_ids: steamIds(options.excludeSteamIds),
@@ -61,5 +52,27 @@ export const buildAnonymizeOptions = ({
     remove_player_camera_movements: options.removeCameraMovements,
     remove_player_mouse_movements: options.removeMouseMovements,
     remove_player_clicks: options.removeClickMovements,
+  };
+};
+
+export const buildAnonymizeOptions = ({
+  inspection,
+  playerState,
+  options,
+}: {
+  inspection: ReplayInspection;
+  playerState: PlayerStateMap;
+  options: UiOptions;
+}): AnonymizeOptions => {
+  return {
+    players: inspection.players.map((player) => buildPlayerOption(player, playerState)),
+    ...buildOptionSettings(options),
+  };
+};
+
+export const buildExportedAnonymizeOptions = (options: UiOptions): AnonymizeOptions => {
+  return {
+    players: [],
+    ...buildOptionSettings(options),
   };
 };

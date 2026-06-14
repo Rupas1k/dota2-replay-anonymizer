@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
-import { buildAnonymizeOptions } from "../anonymizer/anonymizeOptions";
+import { buildAnonymizeOptions, buildExportedAnonymizeOptions } from "../anonymizer/anonymizeOptions";
 import { findOpenDotaHeroes, findOpenDotaProProfiles } from "../anonymizer/openDota";
 import { buildPlayerState } from "../anonymizer/playerRules";
 import type {
@@ -292,7 +292,7 @@ export function useReplayAnonymizer() {
       try {
         const parsed = JSON.parse(await nextFile.text()) as Partial<AnonymizeOptions>;
 
-        if (Array.isArray(parsed.players)) {
+        if (Array.isArray(parsed.players) && parsed.players.length > 0) {
           importedPlayersRef.current = new Map(
             parsed.players.flatMap((player) => {
               const entries: [string, boolean][] = [];
@@ -375,25 +375,14 @@ export function useReplayAnonymizer() {
   }, [file, inspection, outputFileName, readOptions, replayResident, workerCall]);
 
   const exportOptionsJson = useCallback(() => {
-    const exportInspection =
-      inspection ??
-      ({
-        players: [],
-        input_bytes: 0,
-        playback_ticks: 0,
-      } satisfies ReplayInspection);
-    const jsonOptions = buildAnonymizeOptions({
-      inspection: exportInspection,
-      playerState,
-      options,
-    });
+    const jsonOptions = buildExportedAnonymizeOptions(options);
     const blob = new Blob([JSON.stringify(jsonOptions, null, 2) + "\n"], {
       type: "application/json",
     });
 
     downloadBlob(blob, optionsJsonName(file?.name));
     setStatus("Options JSON exported.");
-  }, [file, inspection, options, playerState]);
+  }, [file, options]);
 
   return {
     activeTab,
