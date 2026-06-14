@@ -22,6 +22,7 @@ function playerStateFor(player: ReplayPlayer, playerState: PlayerStateMap) {
   return (
     playerState[playerKey(player)] ?? {
       anonymize: true,
+      locked: false,
     }
   );
 }
@@ -64,10 +65,21 @@ function PlayerCard({
 }) {
   const playerName = defaultPlayerName(player);
   const proLabel = proPlayerLabel(profile);
-  const cardClassName = `player-card is-${team}${proLabel ? " is-pro" : ""}`;
+  const cardClassName = [
+    "player-card",
+    `is-${team}`,
+    proLabel ? "is-pro" : "",
+    playerState.locked ? "is-locked" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   const proNameMatchesReplayName =
     profile?.proName && normalizePlayerName(profile.proName) === normalizePlayerName(playerName);
   const togglePlayer = () => {
+    if (playerState.locked) {
+      return;
+    }
+
     onUpdate(playerKey(player), { anonymize: !playerState.anonymize });
   };
   const handleCardClick = (event: MouseEvent<HTMLElement>) => {
@@ -94,6 +106,7 @@ function PlayerCard({
       tabIndex={0}
       role="checkbox"
       aria-checked={playerState.anonymize}
+      aria-disabled={playerState.locked}
       aria-label={`Anonymize ${playerName}`}
       onClick={handleCardClick}
       onKeyDown={handleCardKeyDown}
@@ -102,6 +115,7 @@ function PlayerCard({
         <input
           type="checkbox"
           checked={playerState.anonymize}
+          disabled={playerState.locked}
           onChange={(event) => onUpdate(playerKey(player), { anonymize: event.target.checked })}
         />
       </label>

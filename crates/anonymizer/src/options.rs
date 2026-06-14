@@ -4,6 +4,11 @@ use serde::{Deserialize, Deserializer};
 #[serde(default)]
 pub struct AnonymizeOptions {
     pub players: Vec<PlayerOption>,
+    pub player_selection_mode: PlayerSelectionMode,
+    #[serde(default, deserialize_with = "deserialize_steam_ids")]
+    pub include_steam_ids: Vec<u64>,
+    #[serde(default, deserialize_with = "deserialize_steam_ids")]
+    pub exclude_steam_ids: Vec<u64>,
     pub remove_combat_log: bool,
     pub remove_match_id: bool,
     pub remove_lobby_name: bool,
@@ -30,6 +35,19 @@ pub struct AnonymizeOptions {
     pub remove_player_camera_movements: bool,
     pub remove_player_mouse_movements: bool,
     pub remove_player_clicks: bool,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum PlayerSelectionMode {
+    IncludeAll,
+    ExcludeAll,
+}
+
+impl Default for PlayerSelectionMode {
+    fn default() -> Self {
+        Self::IncludeAll
+    }
 }
 
 pub trait AnonymizeRules {
@@ -67,6 +85,9 @@ impl Default for AnonymizeOptions {
     fn default() -> Self {
         Self {
             players: Vec::new(),
+            player_selection_mode: PlayerSelectionMode::IncludeAll,
+            include_steam_ids: Vec::new(),
+            exclude_steam_ids: Vec::new(),
             remove_combat_log: false,
             remove_match_id: true,
             remove_lobby_name: true,
@@ -261,5 +282,24 @@ where
     match Value::deserialize(deserializer)? {
         Value::String(value) => value.parse().map_err(serde::de::Error::custom),
         Value::Number(value) => Ok(value),
+    }
+}
+
+fn deserialize_steam_ids<'de, D>(deserializer: D) -> Result<Vec<u64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Vec::<SteamId>::deserialize(deserializer)
+        .map(|values| values.into_iter().map(|value| value.0).collect())
+}
+
+struct SteamId(u64);
+
+impl<'de> Deserialize<'de> for SteamId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserialize_steam_id(deserializer).map(Self)
     }
 }

@@ -9,7 +9,21 @@ use std::{
 };
 
 use anyhow::{anyhow, bail, Context, Result};
-use d2_replay_anonymizer::{anonymize_replay_with_options, AnonymizeOptions};
+use d2_replay_anonymizer::{
+    anonymize_replay_with_options, AnonymizeOptions, PlayerOption, PlayerSelectionMode,
+};
+use source2_demo::prelude::*;
+
+const SOURCE_TV_STEAM_ID_THRESHOLD: u64 = 90000000000000000;
+
+#[derive(Default)]
+struct EntityStateObserver;
+
+impl Observer for EntityStateObserver {
+    fn interests(&self) -> Interests {
+        Interests::ENTITY_STATE
+    }
+}
 
 struct ReplayJob {
     input: PathBuf,
@@ -185,19 +199,95 @@ fn run_job(job: ReplayJob, options: &AnonymizeOptions) -> Result<()> {
             .with_context(|| format!("failed to create {}", parent.display()))?;
     }
 
+    let mut options = options.clone();
+    add_steam_id_overrides(&job.input, &mut options)?;
+
     let input = File::open(&job.input)
         .with_context(|| format!("failed to open {}", job.input.display()))?;
     let output = File::create(&job.output)
         .with_context(|| format!("failed to create {}", job.output.display()))?;
 
-    anonymize_replay_with_options(
-        BufReader::new(input),
-        options.clone(),
-        BufWriter::new(output),
-    )
-    .with_context(|| format!("failed to anonymize {}", job.input.display()))?;
+    anonymize_replay_with_options(BufReader::new(input), options, BufWriter::new(output))
+        .with_context(|| format!("failed to anonymize {}", job.input.display()))?;
 
     Ok(())
+}
+
+fn add_steam_id_overrides(input: &Path, options: &mut AnonymizeOptions) -> Result<()> {
+    if options.player_selection_mode == PlayerSelectionMode::IncludeAll
+        && options.include_steam_ids.is_empty()
+        && options.exclude_steam_ids.is_empty()
+    {
+        return Ok(());
+    }
+
+    let input = BufReader::new(
+        File::open(input).with_context(|| format!("failed to open {}", input.display()))?,
+    );
+    let mut parser = Parser::from_reader(input)?;
+    parser.register_observer::<EntityStateObserver>();
+    parser.jump_to_tick(parser.replay_info().playback_ticks() as u32)?;
+
+    let players = parser
+        .context()
+        .entities()
+        .iter()
+        .filter(|entity| entity.class().name() == "CDOTAPlayerController")
+        .filter_map(player_identity)
+        .collect::<Vec<_>>();
+
+    if options.players.is_empty() {
+        let anonymize = options.player_selection_mode == PlayerSelectionMode::IncludeAll;
+
+        for &(player_id, steam_id) in &players {
+            upsert_player_option(options, player_id, steam_id, anonymize);
+        }
+    }
+
+    for (player_id, steam_id) in players {
+        if options.exclude_steam_ids.contains(&steam_id) {
+            upsert_player_option(options, player_id, steam_id, false);
+        } else if options.include_steam_ids.contains(&steam_id) {
+            upsert_player_option(options, player_id, steam_id, true);
+        }
+    }
+
+    Ok(())
+}
+
+fn player_identity(entity: &Entity) -> Option<(u32, u64)> {
+    let player_id = entity.get_property("m_nPlayerID").ok()?.u32();
+    let steam_id = entity.get_property("m_steamID").ok()?.u64();
+
+    if steam_id == 0 || steam_id > SOURCE_TV_STEAM_ID_THRESHOLD {
+        None
+    } else {
+        Some((player_id, steam_id))
+    }
+}
+
+fn upsert_player_option(
+    options: &mut AnonymizeOptions,
+    player_id: u32,
+    steam_id: u64,
+    anonymize: bool,
+) {
+    if let Some(player) = options
+        .players
+        .iter_mut()
+        .find(|player| player.player_id == player_id || player.steam_id == steam_id)
+    {
+        player.player_id = player_id;
+        player.steam_id = steam_id;
+        player.anonymize = anonymize;
+        return;
+    }
+
+    options.players.push(PlayerOption {
+        player_id,
+        steam_id,
+        anonymize,
+    });
 }
 
 fn parse_args() -> Result<Args> {

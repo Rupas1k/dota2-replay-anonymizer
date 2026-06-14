@@ -16,6 +16,11 @@ const buildPlayerOption = (player: ReplayPlayer, playerState: PlayerStateMap): P
   };
 };
 
+const steamIds = (values: string[]) => values.map((value) => value.trim()).filter(Boolean);
+
+const playerSelectionMode = (options: UiOptions) =>
+  options.playerSelectionMode === "excludeAll" ? "exclude_all" : "include_all";
+
 export const buildAnonymizeOptions = ({
   inspection,
   playerState,
@@ -27,6 +32,9 @@ export const buildAnonymizeOptions = ({
 }): AnonymizeOptions => {
   return {
     players: inspection.players.map((player) => buildPlayerOption(player, playerState)),
+    player_selection_mode: playerSelectionMode(options),
+    include_steam_ids: steamIds(options.includeSteamIds),
+    exclude_steam_ids: steamIds(options.excludeSteamIds),
     remove_combat_log: options.removeCombatLog,
     remove_match_id: options.removeMatchId,
     remove_lobby_name: options.removeLobbyName,

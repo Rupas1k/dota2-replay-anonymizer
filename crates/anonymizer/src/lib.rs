@@ -3,7 +3,7 @@ mod player;
 mod reader;
 mod writer;
 
-pub use options::{AnonymizeOptions, AnonymizeRules, PlayerOption};
+pub use options::{AnonymizeOptions, AnonymizeRules, PlayerOption, PlayerSelectionMode};
 pub use player::ReplayPlayer;
 pub use reader::ReplayRead;
 use source2_demo::prelude::ParserError;

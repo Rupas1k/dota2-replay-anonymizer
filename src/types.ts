@@ -34,8 +34,13 @@ export type PlayerOption = {
   anonymize: boolean;
 };
 
+export type JsonPlayerSelectionMode = "include_all" | "exclude_all";
+
 export type AnonymizeOptions = {
   players: PlayerOption[];
+  player_selection_mode: JsonPlayerSelectionMode;
+  include_steam_ids: string[];
+  exclude_steam_ids: string[];
   remove_combat_log: boolean;
   remove_match_id: boolean;
   remove_lobby_name: boolean;
@@ -114,6 +119,7 @@ export type WorkerResponse = WorkerReady | WorkerFailure | WorkerSuccess;
 
 export type PlayerState = {
   anonymize: boolean;
+  locked: boolean;
 };
 
 export type PlayerStateMap = Record<string, PlayerState>;

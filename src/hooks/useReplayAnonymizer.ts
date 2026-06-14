@@ -183,7 +183,12 @@ export function useReplayAnonymizer() {
     setPlayerState((current) => {
       const previous = current[key] ?? {
         anonymize: false,
+        locked: false,
       };
+
+      if (previous.locked) {
+        return current;
+      }
 
       return {
         ...current,
