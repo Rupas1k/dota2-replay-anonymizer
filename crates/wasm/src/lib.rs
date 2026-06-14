@@ -1,3 +1,4 @@
+use d2_replay_anonymizer::{AnonymizeOptions, ReplayPlayer, ReplayRead};
 use js_sys::{Array, BigInt, Object, Reflect, Uint8Array};
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
@@ -11,96 +12,91 @@ fn set_property(target: &Object, key: &str, value: &JsValue) -> Result<(), JsVal
     Reflect::set(target, &JsValue::from_str(key), value).map(|_| ())
 }
 
-fn read_replay_bytes(input: &[u8]) -> Result<JsValue, JsValue> {
-    let replay = d2_replay_anonymizer::read_replay(input)
-        .map_err(|err| JsValue::from_str(&err.to_string()))?;
+fn set_number(target: &Object, key: &str, value: impl Into<f64>) -> Result<(), JsValue> {
+    set_property(target, key, &JsValue::from_f64(value.into()))
+}
 
-    let inspection = Object::new();
+fn set_bigint(target: &Object, key: &str, value: u64) -> Result<(), JsValue> {
+    set_property(target, key, &JsValue::from(BigInt::from(value)))
+}
+
+fn set_string(target: &Object, key: &str, value: &str) -> Result<(), JsValue> {
+    set_property(target, key, &JsValue::from_str(value))
+}
+
+fn js_error(error: impl ToString) -> JsValue {
+    JsValue::from_str(&error.to_string())
+}
+
+fn player_to_js(player: ReplayPlayer) -> Result<Object, JsValue> {
+    let value = Object::new();
+
+    set_number(&value, "player_id", player.player_id)?;
+    set_bigint(&value, "steam_id", player.steam_id)?;
+    set_number(&value, "team_slot", player.team_slot)?;
+    set_number(&value, "team_num", player.team_num)?;
+    set_number(&value, "hero_id", player.hero_id)?;
+    set_string(&value, "name", &player.name)?;
+
+    Ok(value)
+}
+
+fn inspection_to_js(replay: ReplayRead) -> Result<JsValue, JsValue> {
+    let value = Object::new();
     let players = Array::new();
 
     for player in replay.players {
-        let value = Object::new();
-        set_property(
-            &value,
-            "player_id",
-            &JsValue::from_f64(player.player_id as f64),
-        )?;
-        set_property(
-            &value,
-            "steam_id",
-            &JsValue::from(BigInt::from(player.steam_id)),
-        )?;
-        set_property(
-            &value,
-            "team_slot",
-            &JsValue::from_f64(player.team_slot as f64),
-        )?;
-        set_property(
-            &value,
-            "team_num",
-            &JsValue::from_f64(player.team_num as f64),
-        )?;
-        set_property(&value, "hero_id", &JsValue::from_f64(player.hero_id as f64))?;
-        set_property(&value, "name", &JsValue::from_str(&player.name))?;
-        players.push(&value);
+        let player = JsValue::from(player_to_js(player)?);
+        players.push(&player);
     }
 
-    set_property(&inspection, "players", &players)?;
-    set_property(
-        &inspection,
-        "input_bytes",
-        &JsValue::from_f64(replay.input_bytes as f64),
-    )?;
-    set_property(
-        &inspection,
-        "playback_ticks",
-        &JsValue::from_f64(replay.playback_ticks as f64),
-    )?;
+    set_property(&value, "players", &players)?;
+    set_number(&value, "input_bytes", replay.input_bytes as f64)?;
+    set_number(&value, "playback_ticks", replay.playback_ticks)?;
 
-    Ok(inspection.into())
+    Ok(value.into())
 }
 
-fn parse_options(options: &str) -> Result<d2_replay_anonymizer::AnonymizeOptions, JsValue> {
-    serde_json::from_str(options).map_err(|err| JsValue::from_str(&err.to_string()))
+fn read_replay(input: &[u8]) -> Result<JsValue, JsValue> {
+    let replay = d2_replay_anonymizer::read_replay(input).map_err(js_error)?;
+    inspection_to_js(replay)
 }
 
-fn clear_output() {
-    OUTPUT.with(|output| {
-        *output.borrow_mut() = None;
-    });
+fn parse_options(options: &str) -> Result<AnonymizeOptions, JsValue> {
+    serde_json::from_str(options).map_err(js_error)
+}
+
+fn clear_replay_bytes() {
+    REPLAY.with(|replay| *replay.borrow_mut() = None);
+}
+
+fn clear_output_bytes() {
+    OUTPUT.with(|output| *output.borrow_mut() = None);
 }
 
 #[wasm_bindgen]
 pub fn load_replay(input: Vec<u8>) -> Result<JsValue, JsValue> {
-    clear_output();
+    clear_replay_bytes();
+    clear_output_bytes();
+
+    let inspection = read_replay(&input)?;
 
     REPLAY.with(|replay| {
         *replay.borrow_mut() = Some(input);
+    });
 
-        let inspection = {
-            let replay = replay.borrow();
-            read_replay_bytes(replay.as_deref().expect("replay was just loaded"))
-        };
-
-        if inspection.is_err() {
-            *replay.borrow_mut() = None;
-        }
-
-        inspection
-    })
+    Ok(inspection)
 }
 
 #[wasm_bindgen]
 pub fn clear_replay() {
-    REPLAY.with(|replay| {
-        *replay.borrow_mut() = None;
-    });
-    clear_output();
+    clear_replay_bytes();
+    clear_output_bytes();
 }
 
 #[wasm_bindgen]
 pub fn anonymize_loaded_replay(options: &str) -> Result<Uint8Array, JsValue> {
-    clear_output();
+    clear_output_bytes();
 
     let options = parse_options(options)?;
     let output = REPLAY.with(|replay| {
@@ -109,8 +105,7 @@ pub fn anonymize_loaded_replay(options: &str) -> Result<Uint8Array, JsValue> {
             .as_deref()
             .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
 
-        d2_replay_anonymizer::anonymize_replay_bytes_with_options(input, options)
-            .map_err(|err| JsValue::from_str(&err.to_string()))
+        d2_replay_anonymizer::anonymize_replay_bytes_with_options(input, options).map_err(js_error)
     })?;
 
     OUTPUT.with(|stored| {
@@ -127,5 +122,5 @@ pub fn anonymize_loaded_replay(options: &str) -> Result<Uint8Array, JsValue> {
 
 #[wasm_bindgen]
 pub fn release_anonymized_replay() {
-    clear_output();
+    clear_output_bytes();
 }
