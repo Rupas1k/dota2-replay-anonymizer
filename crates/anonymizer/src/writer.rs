@@ -515,7 +515,7 @@ impl ReplayAnonymizer {
             ends_with("m_cellY"),
         ),
     )]
-    fn remove_camera_movements(&mut self, pawn: &Entity, value: i32) -> Option<i32> {
+    fn remove_camera_movements(&mut self, pawn: &Entity, value: u16) -> Option<u16> {
         if !self.rules.remove_player_camera_movements() {
             return None;
         }
