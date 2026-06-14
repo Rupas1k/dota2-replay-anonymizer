@@ -16,6 +16,8 @@ export const defaultUiOptions: UiOptions = {
   removeTournamentTeamId: true,
   removeTeamLogo: true,
   removePlayerNames: true,
+  removePlayerSteamIds: true,
+  removeHeroCosmetics: true,
   removeGuildData: true,
   removeCourierCosmetics: true,
   removeWardCosmetics: true,

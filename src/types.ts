@@ -136,6 +136,8 @@ export type UiOptions = {
   removeTournamentTeamId: boolean;
   removeTeamLogo: boolean;
   removePlayerNames: boolean;
+  removePlayerSteamIds: boolean;
+  removeHeroCosmetics: boolean;
   removeGuildData: boolean;
   removeCourierCosmetics: boolean;
   removeWardCosmetics: boolean;

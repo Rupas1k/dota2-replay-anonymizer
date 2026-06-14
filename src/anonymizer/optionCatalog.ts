@@ -27,10 +27,10 @@ export const optionGroups: OptionGroup[] = [
         title: "Identity",
         items: [
           {
-            checked: true,
-            locked: true,
+            key: "removePlayerSteamIds",
             title: "Steam IDs",
             description: "Remove Steam IDs from the replay.",
+            inactiveDescription: "Keep Steam IDs.",
           },
           {
             key: "removePlayerNames",
@@ -44,10 +44,10 @@ export const optionGroups: OptionGroup[] = [
         title: "Cosmetics",
         items: [
           {
-            checked: true,
-            locked: true,
+            key: "removeHeroCosmetics",
             title: "Hero cosmetics",
             description: "Remove hero cosmetics from the replay.",
+            inactiveDescription: "Keep hero cosmetics.",
           },
           {
             key: "removeCourierCosmetics",
