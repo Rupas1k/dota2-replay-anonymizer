@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use source2_demo::prelude::*;
 
 pub const SOURCE_TV_STEAM_ID_THRESHOLD: u64 = 90000000000000000;
+pub const STEAM_ID64_BASE: u64 = 76561197960265728;
 
 pub fn is_source_tv(steam_id: u64) -> bool {
     steam_id > SOURCE_TV_STEAM_ID_THRESHOLD

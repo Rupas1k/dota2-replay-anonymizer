@@ -1,5 +1,5 @@
 use crate::options::{AnonymizeOptions, AnonymizeRules};
-use crate::player::is_source_tv;
+use crate::player::{is_source_tv, STEAM_ID64_BASE};
 use source2_demo::prelude::*;
 use source2_demo::proto::*;
 use source2_demo::writer::*;
@@ -210,9 +210,26 @@ impl ReplayAnonymizer {
         table_name: &str,
         entry: &mut StringTableEntryUpdate,
     ) -> Result<(), ParserError> {
-        if table_name == "EconItems" && self.rules.remove_hero_cosmetics() {
-            entry.clear_key();
-            entry.clear_value();
+        if table_name == "EconItems" {
+            if let Some(value) = entry.value_mut() {
+                let mut item = CSoEconItem::decode(value.as_slice())?;
+                let steam_id = STEAM_ID64_BASE + item.account_id() as u64;
+
+                if !self.rules.should_anonymize_steam_id(steam_id) {
+                    return Ok(())
+                }
+
+                if self.rules.remove_player_steam_ids() {
+                    item.account_id = 0.into();
+                }
+                
+                *value = item.encode_to_vec();
+            }
+
+            if self.rules.remove_hero_cosmetics() {
+                entry.clear_key();
+                entry.clear_value();
+            }
         }
 
         Ok(())
