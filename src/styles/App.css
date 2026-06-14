@@ -9,7 +9,6 @@
   --muted-strong: #bdc8d0;
   --accent: #66a8e8;
   --accent-strong: #9dccf7;
-  --success: #79c99e;
   --warning: #e5b66b;
   --focus-ring: 3px solid rgba(44, 123, 229, 0.18);
   --radius: 8px;
@@ -33,7 +32,6 @@ body {
 
 button,
 input,
-select,
 textarea {
   font: inherit;
 }
@@ -66,7 +64,6 @@ button {
 }
 
 input,
-select,
 textarea {
   &:focus {
     outline: var(--focus-ring);
@@ -79,9 +76,7 @@ input {
     display: none;
   }
 
-  &[type="text"],
-  &[type="password"],
-  &[type="search"] {
+  &[type="text"] {
     width: 100%;
     min-height: 38px;
     border: 1px solid var(--border);
@@ -104,7 +99,6 @@ input {
   }
 }
 
-select,
 textarea {
   width: 100%;
   min-height: 38px;
@@ -317,6 +311,7 @@ textarea {
 
 .review-section {
   display: grid;
+  gap: 14px;
 }
 
 .options-review {
@@ -542,10 +537,6 @@ textarea {
   }
 }
 
-.review-section {
-  gap: 14px;
-}
-
 .option-toggle {
   position: relative;
   display: grid;
@@ -582,16 +573,6 @@ textarea {
   &.is-checked {
     border-color: rgba(102, 168, 232, 0.38);
     background: #111d29;
-  }
-
-  &.is-locked {
-    cursor: default;
-    border-color: rgba(121, 201, 158, 0.2);
-
-    &:hover {
-      border-color: rgba(121, 201, 158, 0.28);
-      background: #0f161d;
-    }
   }
 
   strong,
@@ -641,17 +622,6 @@ textarea {
   span {
     transform: translateX(18px);
     background: var(--accent-strong);
-  }
-}
-
-.option-toggle.is-locked {
-  .option-switch {
-    border-color: rgba(111, 211, 164, 0.54);
-    background: rgba(111, 211, 164, 0.13);
-
-    span {
-      background: var(--success);
-    }
   }
 }
 

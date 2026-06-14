@@ -15,14 +15,6 @@ type OptionsReviewProps = {
 };
 
 
-function optionChecked(option: OptionItem, options: UiOptions) {
-  if (option.locked) {
-    return option.checked ?? true;
-  }
-
-  return option.key ? options[option.key] : false;
-}
-
 function OptionToggle({
   option,
   options,
@@ -32,18 +24,16 @@ function OptionToggle({
   options: UiOptions;
   onOptionChange: (key: UiOptionKey, value: boolean) => void;
 }) {
-  const checked = optionChecked(option, options);
-  const disabled = Boolean(option.locked || !option.key);
+  const checked = option.key ? options[option.key] : false;
   const description = checked
     ? option.description
     : (option.inactiveDescription ?? "Leave this data as-is.");
 
   return (
-    <label className={`option-toggle${checked ? " is-checked" : ""}${disabled ? " is-locked" : ""}`}>
+    <label className={`option-toggle${checked ? " is-checked" : ""}`}>
       <input
         type="checkbox"
         checked={checked}
-        disabled={disabled}
         onChange={(event) => {
           if (option.key) {
             onOptionChange(option.key, event.target.checked);

@@ -5,8 +5,6 @@ export type OptionItem = {
   title: string;
   description: string;
   inactiveDescription?: string;
-  locked?: boolean;
-  checked?: boolean;
 };
 
 export type OptionSection = {
