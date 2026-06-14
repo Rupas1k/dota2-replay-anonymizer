@@ -3,6 +3,7 @@ import init, {
   clear_replay,
   inspect_loaded_replay,
   load_replay_bytes,
+  quick_scan_loaded_replay,
   release_anonymized_replay,
 } from "../wasm-pkg/d2_replay_anonymizer_wasm.js";
 import type {
@@ -43,14 +44,17 @@ const postSuccess = <Type extends WorkerRequestType>(
   });
 };
 
-const readInspection = (buffer: ArrayBuffer): ReplayInspection => {
+const readInspection = (buffer: ArrayBuffer, mode: "quick" | "full"): ReplayInspection => {
   console.time("worker inspect: load replay into wasm memory");
   load_replay_bytes(new Uint8Array(buffer));
   console.timeEnd("worker inspect: load replay into wasm memory");
 
-  console.time("worker inspect: read replay metadata");
-  const inspection = inspect_loaded_replay() as ReplayInspection;
-  console.timeEnd("worker inspect: read replay metadata");
+  console.time(`worker inspect: ${mode} read replay metadata`);
+  const inspection =
+    mode === "full"
+      ? (inspect_loaded_replay() as ReplayInspection)
+      : (quick_scan_loaded_replay() as ReplayInspection);
+  console.timeEnd(`worker inspect: ${mode} read replay metadata`);
 
   if (!inspection || !Array.isArray(inspection.players)) {
     throw new Error("Replay inspection did not return players.");
@@ -65,7 +69,7 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
       replayLoaded = false;
       clear_replay();
       try {
-        const inspection = readInspection(payload.buffer);
+        const inspection = readInspection(payload.buffer, payload.mode ?? "quick");
         detachBuffer(payload.buffer);
         replayLoaded = true;
         postSuccess(id, type, { inspection });

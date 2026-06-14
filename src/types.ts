@@ -72,6 +72,7 @@ export type AnonymizeOptions = {
 export type WorkerRequestPayloads = {
   inspect: {
     buffer: ArrayBuffer;
+    mode?: "quick" | "full";
   };
   anonymize: {
     options: AnonymizeOptions;

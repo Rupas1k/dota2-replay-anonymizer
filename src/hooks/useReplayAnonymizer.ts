@@ -134,6 +134,36 @@ export function useReplayAnonymizer() {
 
   const canAnonymize = workerReady && !busy && Boolean(file && inspection);
 
+  const inspectLoadedFile = useCallback(
+    async (nextFile: File, mode: "quick" | "full") => {
+      setStatus(mode === "full" ? "Running full replay scan..." : "Inspecting replay...");
+      console.time(`replay inspect ${mode}: load file into browser memory`);
+      const buffer = await nextFile.arrayBuffer();
+      console.timeEnd(`replay inspect ${mode}: load file into browser memory`);
+
+      console.time(`replay inspect ${mode}: worker total`);
+      const response = await workerCall("inspect", { buffer, mode }, [buffer]);
+      console.timeEnd(`replay inspect ${mode}: worker total`);
+
+      const nextInspection = response.inspection;
+      setInspection(nextInspection);
+      setReplayResident(true);
+      setPlayerState(
+        buildPlayerState({
+          inspection: nextInspection,
+          options,
+        }),
+      );
+      setActiveTab("review");
+      setStatus(
+        mode === "full"
+          ? "Full scan finished. Review the updated player list."
+          : "Replay inspected. Review the anonymization settings.",
+      );
+    },
+    [options, workerCall],
+  );
+
   const inspectFile = useCallback(
     async (nextFile: File | null) => {
       setFile(nextFile);
@@ -148,27 +178,7 @@ export function useReplayAnonymizer() {
       }
 
       try {
-        setStatus("Inspecting replay...");
-        console.time("replay inspect: load file into browser memory");
-        const buffer = await nextFile.arrayBuffer();
-        console.timeEnd("replay inspect: load file into browser memory");
-
-        console.time("replay inspect: worker total");
-        const response = await workerCall("inspect", { buffer }, [buffer]);
-        console.timeEnd("replay inspect: worker total");
-
-        const nextInspection = response.inspection;
-        setInspection(nextInspection);
-        setReplayResident(true);
-        setPlayerState(
-          buildPlayerState({
-            inspection: nextInspection,
-            options,
-          }),
-        );
-        setActiveTab("review");
-        setStatus("Replay inspected. Review the anonymization settings.");
-
+        await inspectLoadedFile(nextFile, "quick");
       } catch (error) {
         resetInspection();
         setStatus(error instanceof Error ? error.message : String(error));
@@ -176,8 +186,24 @@ export function useReplayAnonymizer() {
         setBusy(false);
       }
     },
-    [options, resetInspection, workerCall, workerReady],
+    [inspectLoadedFile, resetInspection, workerReady],
   );
+
+  const runFullScan = useCallback(async () => {
+    if (!file || busy) {
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      await inspectLoadedFile(file, "full");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, file, inspectLoadedFile]);
 
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -392,6 +418,7 @@ export function useReplayAnonymizer() {
     handleFileChange,
     handleOptionsJsonChange,
     importOptionsJson,
+    runFullScan,
     setActiveTab,
     setOutputFileName,
     exportOptionsJson,

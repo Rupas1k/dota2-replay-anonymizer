@@ -33,6 +33,7 @@ export default function App() {
           onOptionsJsonChange={replay.handleOptionsJsonChange}
           onOutputFileNameChange={replay.setOutputFileName}
           onRestoreDefaultOptions={replay.restoreDefaultOptions}
+          onRunFullScan={replay.runFullScan}
         />
 
         <ReviewPanel

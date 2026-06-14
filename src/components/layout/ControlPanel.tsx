@@ -24,6 +24,7 @@ type ControlPanelProps = {
   onOptionsJsonChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onOutputFileNameChange: (name: string) => void;
   onRestoreDefaultOptions: () => void;
+  onRunFullScan: () => void;
 };
 
 export function ControlPanel({
@@ -48,6 +49,7 @@ export function ControlPanel({
   onOptionsJsonChange,
   onOutputFileNameChange,
   onRestoreDefaultOptions,
+  onRunFullScan,
 }: ControlPanelProps) {
   const visibleStatus = status.startsWith("Ready.") ? "" : status;
 
@@ -82,6 +84,14 @@ export function ControlPanel({
             onChange={onFileChange}
           />
         </label>
+        <button
+          type="button"
+          className="secondary-action wide"
+          disabled={!file || busy}
+          onClick={onRunFullScan}
+        >
+          Full scan
+        </button>
       </section>
 
       <section className="panel-section options-panel">
