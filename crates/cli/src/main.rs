@@ -8,6 +8,7 @@ use std::{
     process, thread,
 };
 
+use anyhow::{anyhow, bail, Context, Result};
 use d2_replay_anonymizer::{anonymize_replay_with_options, AnonymizeOptions};
 
 struct ReplayJob {
@@ -24,12 +25,12 @@ struct Args {
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("{error}");
+        eprintln!("{error:#}");
         process::exit(1);
     }
 }
 
-fn run() -> Result<(), String> {
+fn run() -> Result<()> {
     let args = parse_args()?;
     let options = read_options(args.options.as_deref())?;
     let jobs = build_jobs(&args.input, &args.output)?;
@@ -37,25 +38,25 @@ fn run() -> Result<(), String> {
     run_jobs(jobs, options, args.jobs)
 }
 
-fn read_options(path: Option<&Path>) -> Result<AnonymizeOptions, String> {
+fn read_options(path: Option<&Path>) -> Result<AnonymizeOptions> {
     match path {
         Some(path) => {
             let bytes = fs::read(path)
-                .map_err(|error| format!("failed to read options {}: {error}", path.display()))?;
+                .with_context(|| format!("failed to read options {}", path.display()))?;
             serde_json::from_slice(&bytes)
-                .map_err(|error| format!("failed to parse options {}: {error}", path.display()))
+                .with_context(|| format!("failed to parse options {}", path.display()))
         }
         None => Ok(AnonymizeOptions::default()),
     }
 }
 
-fn build_jobs(input: &Path, output: &Path) -> Result<Vec<ReplayJob>, String> {
+fn build_jobs(input: &Path, output: &Path) -> Result<Vec<ReplayJob>> {
     if input.is_dir() {
         if output.exists() && !output.is_dir() {
-            return Err(format!(
+            bail!(
                 "output must be a directory when input is a directory: {}",
                 output.display()
-            ));
+            );
         }
 
         let inputs = collect_replays(input)?;
@@ -64,12 +65,7 @@ fn build_jobs(input: &Path, output: &Path) -> Result<Vec<ReplayJob>, String> {
             .map(|replay| {
                 let relative = replay
                     .strip_prefix(input)
-                    .map_err(|error| {
-                        format!(
-                            "failed to resolve replay path {}: {error}",
-                            replay.display()
-                        )
-                    })?
+                    .with_context(|| format!("failed to resolve replay path {}", replay.display()))?
                     .to_path_buf();
 
                 Ok(ReplayJob {
@@ -87,19 +83,19 @@ fn build_jobs(input: &Path, output: &Path) -> Result<Vec<ReplayJob>, String> {
         }]);
     }
 
-    Err(format!("input does not exist: {}", input.display()))
+    bail!("input does not exist: {}", input.display())
 }
 
-fn collect_replays(root: &Path) -> Result<Vec<PathBuf>, String> {
+fn collect_replays(root: &Path) -> Result<Vec<PathBuf>> {
     let mut replays = Vec::new();
     let mut pending = vec![root.to_path_buf()];
 
     while let Some(dir) = pending.pop() {
-        for entry in fs::read_dir(&dir)
-            .map_err(|error| format!("failed to read {}: {error}", dir.display()))?
+        for entry in
+            fs::read_dir(&dir).with_context(|| format!("failed to read {}", dir.display()))?
         {
             let path = entry
-                .map_err(|error| format!("failed to read {} entry: {error}", dir.display()))?
+                .with_context(|| format!("failed to read {} entry", dir.display()))?
                 .path();
 
             if path.is_dir() {
@@ -119,11 +115,7 @@ fn is_replay_file(path: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("dem"))
 }
 
-fn run_jobs(
-    replay_jobs: Vec<ReplayJob>,
-    options: AnonymizeOptions,
-    jobs: usize,
-) -> Result<(), String> {
+fn run_jobs(replay_jobs: Vec<ReplayJob>, options: AnonymizeOptions, jobs: usize) -> Result<()> {
     if replay_jobs.is_empty() {
         return Ok(());
     }
@@ -173,35 +165,42 @@ fn run_jobs(
     if errors.is_empty() {
         Ok(())
     } else {
-        Err(errors.join("\n"))
+        let errors = errors
+            .into_iter()
+            .map(|error| format!("{error:#}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        Err(anyhow!(errors))
     }
 }
 
-fn run_job(job: ReplayJob, options: &AnonymizeOptions) -> Result<(), String> {
+fn run_job(job: ReplayJob, options: &AnonymizeOptions) -> Result<()> {
     if let Some(parent) = job
         .output
         .parent()
         .filter(|path| !path.as_os_str().is_empty())
     {
         fs::create_dir_all(parent)
-            .map_err(|error| format!("failed to create {}: {error}", parent.display()))?;
+            .with_context(|| format!("failed to create {}", parent.display()))?;
     }
 
     let input = File::open(&job.input)
-        .map_err(|error| format!("failed to open {}: {error}", job.input.display()))?;
+        .with_context(|| format!("failed to open {}", job.input.display()))?;
     let output = File::create(&job.output)
-        .map_err(|error| format!("failed to create {}: {error}", job.output.display()))?;
+        .with_context(|| format!("failed to create {}", job.output.display()))?;
 
     anonymize_replay_with_options(
         BufReader::new(input),
         options.clone(),
         BufWriter::new(output),
     )
-    .map(|_| ())
-    .map_err(|error| format!("failed to anonymize {}: {error}", job.input.display()))
+    .with_context(|| format!("failed to anonymize {}", job.input.display()))?;
+
+    Ok(())
 }
 
-fn parse_args() -> Result<Args, String> {
+fn parse_args() -> Result<Args> {
     let mut positionals = Vec::new();
     let mut jobs = 1;
     let mut args = env::args_os().skip(1);
@@ -209,7 +208,7 @@ fn parse_args() -> Result<Args, String> {
     while let Some(arg) = args.next() {
         if arg == "--jobs" {
             let Some(value) = args.next() else {
-                return Err(usage());
+                bail!(usage());
             };
 
             jobs = parse_jobs(&value)?;
@@ -227,7 +226,7 @@ fn parse_args() -> Result<Args, String> {
     let (input, options, output) = match positionals.as_slice() {
         [input, output] => (input.into(), None, output.into()),
         [input, options, output] => (input.into(), Some(options.into()), output.into()),
-        _ => return Err(usage()),
+        _ => bail!(usage()),
     };
 
     Ok(Args {
@@ -238,12 +237,12 @@ fn parse_args() -> Result<Args, String> {
     })
 }
 
-fn parse_jobs(value: &OsStr) -> Result<usize, String> {
+fn parse_jobs(value: &OsStr) -> Result<usize> {
     let value = value.to_string_lossy();
-    let jobs = value.parse().map_err(|_| usage())?;
+    let jobs = value.parse().map_err(|_| anyhow!(usage()))?;
 
     if jobs == 0 {
-        return Err("--jobs must be greater than 0".to_string());
+        bail!("--jobs must be greater than 0");
     }
 
     Ok(jobs)
