@@ -3,7 +3,7 @@ use crate::player::{is_source_tv, STEAM_ID64_BASE};
 use source2_demo::prelude::*;
 use source2_demo::proto::*;
 use source2_demo::writer::*;
-use std::io::Cursor;
+use std::io::{Cursor, Read, Seek, Write};
 
 const ANONYMOUS_NAME: &str = "Anonymous";
 
@@ -216,13 +216,13 @@ impl ReplayAnonymizer {
                 let steam_id = STEAM_ID64_BASE + item.account_id() as u64;
 
                 if !self.rules.should_anonymize_steam_id(steam_id) {
-                    return Ok(())
+                    return Ok(());
                 }
 
                 if self.rules.remove_player_steam_ids() {
                     item.account_id = 0.into();
                 }
-                
+
                 *value = item.encode_to_vec();
             }
 
@@ -795,7 +795,7 @@ impl ReplayAnonymizer {
         &mut self,
         msg: CUserMsgParticleManager,
     ) -> Result<MessageRewrite, ParserError> {
-        if !self.particles_seen < PARTICLES_TO_DROP || !is_particle_to_remove(&msg) {
+        if self.particles_seen >= PARTICLES_TO_DROP || !is_particle_to_remove(&msg) {
             return Ok(MessageRewrite::Keep);
         }
 
@@ -849,4 +849,21 @@ pub(crate) fn anonymize_replay_bytes_with_options(
     writer.run()?;
     let (_, output) = writer.into_parts();
     Ok(output.into_inner())
+}
+
+pub(crate) fn anonymize_replay_with_options<R, W>(
+    input: R,
+    options: AnonymizeOptions,
+    output: W,
+) -> Result<W, ParserError>
+where
+    R: Read + Seek,
+    W: Write + Seek,
+{
+    let mut writer = DemoWriter::from_reader(input, output)?;
+    writer.add_rewriter(ReplayAnonymizer::new(options));
+
+    writer.run()?;
+    let (_, output) = writer.into_parts();
+    Ok(output)
 }
