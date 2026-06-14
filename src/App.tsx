@@ -19,6 +19,7 @@ export default function App() {
           file={replay.file}
           fileInputRef={replay.fileInputRef}
           inspection={replay.inspection}
+          optionsInputRef={replay.optionsInputRef}
           outputFileName={replay.outputFileName}
           status={replay.status}
           onActiveTabChange={replay.setActiveTab}
@@ -28,6 +29,8 @@ export default function App() {
           onDrop={replay.handleDrop}
           onExportOptionsJson={replay.exportOptionsJson}
           onFileChange={replay.handleFileChange}
+          onImportOptionsJson={replay.importOptionsJson}
+          onOptionsJsonChange={replay.handleOptionsJsonChange}
           onOutputFileNameChange={replay.setOutputFileName}
           onRestoreDefaultOptions={replay.restoreDefaultOptions}
         />

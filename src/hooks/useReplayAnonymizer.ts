@@ -14,12 +14,19 @@ import type {
   UiOptionKey,
   UiOptions,
 } from "../types";
-import { createDefaultUiOptions, loadUiOptions, saveUiOptions } from "../anonymizer/uiOptions";
-import { anonymizedReplayName, downloadBlob, optionsJsonName } from "../utils";
+import {
+  createDefaultUiOptions,
+  loadUiOptions,
+  saveUiOptions,
+  uiOptionsFromJson,
+} from "../anonymizer/uiOptions";
+import { anonymizedReplayName, downloadBlob, optionsJsonName, playerKey, steamIdText } from "../utils";
 import { useReplayWorker } from "./useReplayWorker";
 
 export function useReplayAnonymizer() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const optionsInputRef = useRef<HTMLInputElement | null>(null);
+  const importedPlayersRef = useRef<Map<string, boolean> | null>(null);
   const { workerReady, workerError, workerCall } = useReplayWorker();
 
   const [status, setStatus] = useState("Loading WASM...");
@@ -55,14 +62,33 @@ export function useReplayAnonymizer() {
       return;
     }
 
-    setPlayerState((current) =>
-      buildPlayerState({
+    setPlayerState((current) => {
+      const next = buildPlayerState({
         inspection,
         options,
         profiles: playerProfiles,
         previous: current,
-      }),
-    );
+      });
+      const importedPlayers = importedPlayersRef.current;
+
+      if (!importedPlayers) {
+        return next;
+      }
+
+      importedPlayersRef.current = null;
+      return Object.fromEntries(
+        inspection.players.map((player) => {
+          const key = playerKey(player);
+          const anonymize =
+            importedPlayers.get(key) ??
+            importedPlayers.get(`steam:${steamIdText(player.steam_id)}`) ??
+            next[key]?.anonymize ??
+            true;
+
+          return [key, { ...next[key], anonymize, locked: false } satisfies PlayerState];
+        }),
+      );
+    });
   }, [
     inspection,
     options.excludeSteamIds,
@@ -123,8 +149,13 @@ export function useReplayAnonymizer() {
 
       try {
         setStatus("Inspecting replay...");
+        console.time("replay inspect: load file into browser memory");
         const buffer = await nextFile.arrayBuffer();
+        console.timeEnd("replay inspect: load file into browser memory");
+
+        console.time("replay inspect: worker total");
         const response = await workerCall("inspect", { buffer }, [buffer]);
+        console.timeEnd("replay inspect: worker total");
 
         const nextInspection = response.inspection;
         setInspection(nextInspection);
@@ -219,6 +250,47 @@ export function useReplayAnonymizer() {
     setStatus("Options restored to defaults.");
   }, []);
 
+  const importOptionsJson = useCallback(() => {
+    optionsInputRef.current?.click();
+  }, []);
+
+  const handleOptionsJsonChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const nextFile = event.target.files?.[0] ?? null;
+      event.target.value = "";
+
+      if (!nextFile) {
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(await nextFile.text()) as Partial<AnonymizeOptions>;
+
+        if (Array.isArray(parsed.players)) {
+          importedPlayersRef.current = new Map(
+            parsed.players.flatMap((player) => {
+              const entries: [string, boolean][] = [];
+              const anonymize = Boolean(player.anonymize);
+
+              if (player.player_id != null) {
+                entries.push([`player:${player.player_id}`, anonymize]);
+              }
+
+              entries.push([`steam:${player.steam_id}`, anonymize]);
+              return entries;
+            }),
+          );
+        }
+
+        setOptions((current) => uiOptionsFromJson(parsed, current));
+        setStatus("Options JSON imported.");
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : String(error));
+      }
+    },
+    [],
+  );
+
   const readOptions = useCallback((): AnonymizeOptions | null => {
     if (!inspection) {
       return null;
@@ -242,6 +314,7 @@ export function useReplayAnonymizer() {
     setStatus("Anonymizing replay...");
 
     try {
+      console.time("replay anonymize: total");
       const payload: { options: AnonymizeOptions; buffer?: ArrayBuffer } = {
         options: anonymizeOptions,
       };
@@ -249,18 +322,26 @@ export function useReplayAnonymizer() {
 
       if (!replayResident) {
         setStatus("Reloading replay...");
+        console.time("replay anonymize: load file into browser memory");
         const buffer = await file.arrayBuffer();
+        console.timeEnd("replay anonymize: load file into browser memory");
         payload.buffer = buffer;
         transfer.push(buffer);
         setStatus("Anonymizing replay...");
       }
 
+      console.time("replay anonymize: worker");
       const { blob } = await workerCall("anonymize", payload, transfer);
+      console.timeEnd("replay anonymize: worker");
 
+      console.time("replay anonymize: download");
       downloadBlob(blob, outputFileName.trim() || anonymizedReplayName(file.name));
+      console.timeEnd("replay anonymize: download");
+      console.timeEnd("replay anonymize: total");
       setReplayResident(false);
       setStatus("Done. The anonymized replay was downloaded.");
     } catch (error) {
+      console.timeEnd("replay anonymize: total");
       setStatus(error instanceof Error ? error.message : String(error));
     } finally {
       setBusy(false);
@@ -298,6 +379,7 @@ export function useReplayAnonymizer() {
     heroesById,
     inspection,
     options,
+    optionsInputRef,
     outputFileName,
     playerProfiles,
     playerState,
@@ -308,6 +390,8 @@ export function useReplayAnonymizer() {
     handleDragOver,
     handleDrop,
     handleFileChange,
+    handleOptionsJsonChange,
+    importOptionsJson,
     setActiveTab,
     setOutputFileName,
     exportOptionsJson,

@@ -75,15 +75,31 @@ fn clear_output_bytes() {
 }
 
 #[wasm_bindgen]
-pub fn load_replay(input: Vec<u8>) -> Result<JsValue, JsValue> {
+pub fn load_replay_bytes(input: Vec<u8>) {
     clear_replay_bytes();
     clear_output_bytes();
-
-    let inspection = read_replay(&input)?;
 
     REPLAY.with(|replay| {
         *replay.borrow_mut() = Some(input);
     });
+}
+
+#[wasm_bindgen]
+pub fn inspect_loaded_replay() -> Result<JsValue, JsValue> {
+    REPLAY.with(|replay| {
+        let replay = replay.borrow();
+        let input = replay
+            .as_deref()
+            .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
+
+        read_replay(input)
+    })
+}
+
+#[wasm_bindgen]
+pub fn load_replay(input: Vec<u8>) -> Result<JsValue, JsValue> {
+    load_replay_bytes(input);
+    let inspection = inspect_loaded_replay()?;
 
     Ok(inspection)
 }

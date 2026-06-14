@@ -10,6 +10,7 @@ type ControlPanelProps = {
   file: File | null;
   fileInputRef: RefObject<HTMLInputElement>;
   inspection: ReplayInspection | null;
+  optionsInputRef: RefObject<HTMLInputElement>;
   outputFileName: string;
   status: string;
   onActiveTabChange: (tab: ReviewTab) => void;
@@ -19,6 +20,8 @@ type ControlPanelProps = {
   onDrop: (event: DragEvent<HTMLLabelElement>) => void;
   onExportOptionsJson: () => void;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onImportOptionsJson: () => void;
+  onOptionsJsonChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onOutputFileNameChange: (name: string) => void;
   onRestoreDefaultOptions: () => void;
 };
@@ -31,6 +34,7 @@ export function ControlPanel({
   file,
   fileInputRef,
   inspection,
+  optionsInputRef,
   outputFileName,
   status,
   onActiveTabChange,
@@ -40,6 +44,8 @@ export function ControlPanel({
   onDrop,
   onExportOptionsJson,
   onFileChange,
+  onImportOptionsJson,
+  onOptionsJsonChange,
   onOutputFileNameChange,
   onRestoreDefaultOptions,
 }: ControlPanelProps) {
@@ -105,13 +111,23 @@ export function ControlPanel({
         <div className="utility-actions">
           <div>
             <button type="button" onClick={onRestoreDefaultOptions}>
-              Restore defaults
+              Restore
+            </button>
+            <button type="button" onClick={onImportOptionsJson}>
+              Import JSON
             </button>
             <button type="button" onClick={onExportOptionsJson}>
               Export JSON
             </button>
           </div>
         </div>
+        <input
+          ref={optionsInputRef}
+          type="file"
+          accept=".json,application/json"
+          hidden
+          onChange={onOptionsJsonChange}
+        />
       </section>
 
       <section className="panel-section export-panel">
