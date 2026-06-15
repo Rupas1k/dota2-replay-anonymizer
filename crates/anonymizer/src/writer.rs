@@ -804,6 +804,44 @@ impl ReplayAnonymizer {
         Ok(MessageRewrite::Drop)
     }
 
+    #[rewrite_demo_message]
+    fn metadata(&mut self, msg: &mut CDemoFileInfo) -> Result<MessageRewrite, ParserError> {
+        let Some(info) = &mut msg.game_info else {
+            return Ok(MessageRewrite::Keep);
+        };
+
+        let Some(dota) = &mut info.dota else {
+            return Ok(MessageRewrite::Keep);
+        };
+
+        if self.rules.remove_match_id() {
+            dota.match_id = 0.into();
+            dota.leagueid = 0.into();
+        }
+
+        if self.rules.remove_tournament_team_id() || self.rules.remove_team_name() {
+            dota.dire_team_id = 0.into();
+            dota.radiant_team_id = 0.into();
+        }
+
+        if self.rules.remove_team_tag() {
+            dota.radiant_team_tag = String::default().into();
+            dota.dire_team_tag = String::default().into();
+        }
+
+        for player in &mut dota.player_info {
+            if self.rules.should_anonymize_steam_id(player.steamid()) {
+                player.steamid = 0.into();
+            }
+
+            if self.rules.remove_player_names() {
+                player.player_name = vec![].into();
+            }
+        }
+
+        Ok(MessageRewrite::Rewrite)
+    }
+
     #[rewrite_packet_messages]
     fn promo(
         &mut self,
