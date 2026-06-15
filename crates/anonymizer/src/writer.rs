@@ -179,8 +179,7 @@ impl ReplayAnonymizer {
                     return Ok(());
                 }
 
-                let player_id = (player.userid() as u32) << 1;
-                if !self.rules.should_anonymize_player_id(player_id) {
+                if !self.rules.should_anonymize_steam_id(steam_id) {
                     return Ok(());
                 }
 
