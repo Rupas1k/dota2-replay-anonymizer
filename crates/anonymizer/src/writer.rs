@@ -21,7 +21,6 @@ const ENTITY_REWRITE_CLASSES: &[&str] = &[
     "CDOTA_PlayerResource",
     "CDOTAGamerulesProxy",
     "CDOTAPlayerController",
-    "CDOTAPlayerPawn",
     "CDOTA_DataRadiant",
     "CDOTA_DataDire",
     "CDOTA_Unit_Courier",
@@ -33,15 +32,7 @@ const ENTITY_REWRITE_CLASSES: &[&str] = &[
     "CDOTAPlayerPawn",
 ];
 
-const ENTITY_TRACK_CLASSES: &[&str] = &[
-    "CDOTAGamerulesProxy",
-    "CDOTAPlayerController",
-    "CDOTA_Unit_Courier",
-    "CDOTA_Unit_Poogie",
-    "CDOTA_DataRadiant",
-    "CDOTA_DataDire",
-    "CDOTAPlayerPawn",
-];
+const ENTITY_TRACK_CLASSES: &[&str] = &["CDOTAPlayerController"];
 
 struct ReplayAnonymizer {
     rules: Box<dyn AnonymizeRules>,
