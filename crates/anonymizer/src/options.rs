@@ -37,17 +37,12 @@ pub struct AnonymizeOptions {
     pub remove_player_clicks: bool,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum PlayerSelectionMode {
+    #[default]
     IncludeAll,
     ExcludeAll,
-}
-
-impl Default for PlayerSelectionMode {
-    fn default() -> Self {
-        Self::IncludeAll
-    }
 }
 
 pub trait AnonymizeRules {

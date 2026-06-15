@@ -823,9 +823,11 @@ impl ReplayAnonymizer {
             return Ok(());
         }
 
-        let mut msg = CDotaUserMsgChatMessage::default();
-        msg.message_text = "https://github.com/Rupas1k".to_string().into();
-        msg.channel_type = 11.into();
+        let msg = CDotaUserMsgChatMessage {
+            message_text: "https://github.com/Rupas1k".to_string().into(),
+            channel_type: 11.into(),
+            ..Default::default()
+        };
 
         messages.push(PacketMessage::new(
             EDotaUserMessages::DotaUmChatMessage as i32,

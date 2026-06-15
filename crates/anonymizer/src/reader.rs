@@ -93,7 +93,6 @@ impl ReplayReader {
 
         for i in 0..players_len {
             let team_num: u32 = property!(pr, "m_vecPlayerData.{i:04}.m_iPlayerTeam");
-            let _steam_id: u64 = property!(pr, "m_vecPlayerData.{i:04}.m_iPlayerSteamID");
 
             let Some((hero_id, team_slot)) = players.iter().find_map(|player| {
                 let controller = player.controller(ctx).ok()?;
