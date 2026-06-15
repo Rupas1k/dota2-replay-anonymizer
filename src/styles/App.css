@@ -191,6 +191,10 @@ textarea {
 
 .secondary-action {
   color: var(--muted-strong);
+
+  .info-tooltip {
+    margin-left: 6px;
+  }
 }
 
 .wide {
@@ -373,7 +377,64 @@ textarea {
 }
 
 .rule-label {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
   padding-top: 9px;
+}
+
+.info-tooltip {
+  position: relative;
+  display: inline-grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+  border: 1px solid rgba(80, 99, 115, 0.7);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 820;
+  line-height: 1;
+  vertical-align: middle;
+
+  > span {
+    position: absolute;
+    z-index: 10;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    width: max-content;
+    max-width: 240px;
+    padding: 7px 9px;
+    border: 1px solid rgba(64, 83, 98, 0.9);
+    border-radius: var(--radius);
+    background: #0a1016;
+    box-shadow: var(--shadow);
+    color: var(--muted-strong);
+    font-size: 0.78rem;
+    font-weight: 560;
+    line-height: 1.35;
+    opacity: 0;
+    pointer-events: none;
+    text-align: left;
+    transform: translate(-50%, 4px);
+    transition:
+      opacity 0.12s ease,
+      transform 0.12s ease;
+    visibility: hidden;
+    white-space: normal;
+  }
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(102, 168, 232, 0.58);
+    color: var(--accent-strong);
+
+    > span {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      visibility: visible;
+    }
+  }
 }
 
 .segmented-control {
@@ -634,6 +695,12 @@ textarea {
   gap: 8px;
   align-items: flex-start;
   justify-content: space-between;
+
+  & > span {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
 }
 
 .export-panel {

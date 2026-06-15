@@ -4,6 +4,7 @@ export type OptionItem = {
   key?: UiOptionKey;
   title: string;
   description: string;
+  tooltip?: string;
   inactiveDescription?: string;
 };
 
@@ -29,12 +30,14 @@ export const optionGroups: OptionGroup[] = [
             title: "Steam IDs",
             description: "Remove Steam IDs from the replay.",
             inactiveDescription: "Keep Steam IDs.",
+            tooltip: "Main identifier that links player to their profiles",
           },
           {
             key: "removePlayerNames",
             title: "Player names",
             description: "Replace names with anonymous ones.",
             inactiveDescription: "Leave names as they are.",
+            tooltip: "Names that are used when steam IDs are not available",
           },
         ],
       },
@@ -46,6 +49,7 @@ export const optionGroups: OptionGroup[] = [
             title: "Hero cosmetics",
             description: "Remove hero cosmetics from the replay.",
             inactiveDescription: "Keep hero cosmetics.",
+            tooltip: "Arcana models and personas are kept and may be broken",
           },
           {
             key: "removeCourierCosmetics",
