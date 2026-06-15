@@ -32,7 +32,13 @@ const ENTITY_REWRITE_CLASSES: &[&str] = &[
     "CDOTAPlayerPawn",
 ];
 
-const ENTITY_TRACK_CLASSES: &[&str] = &["CDOTAPlayerController"];
+const ENTITY_TRACK_CLASSES: &[&str] = &[
+    "CDOTAPlayerController",
+    "CDOTA_DataRadiant",
+    "CDOTA_DataDire",
+    "CDOTA_Unit_Courier",
+    "CDOTAPlayerPawn",
+];
 
 struct ReplayAnonymizer {
     rules: Box<dyn AnonymizeRules>,
@@ -224,6 +230,19 @@ impl ReplayAnonymizer {
         Ok(())
     }
 
+    #[rewrite_string_table_entry]
+    fn rewrite_combat_log_names(
+        &mut self,
+        table_name: &str,
+        entry: &mut StringTableEntryUpdate,
+    ) -> Result<(), ParserError> {
+        if table_name == "CombatLogNames" && self.rules.remove_combat_log() {
+            entry.clear_key();
+        }
+
+        Ok(())
+    }
+
     #[rewrite_field(
         class = "CDOTAGamerulesProxy",
         field = ends_with("m_unMatchID64"),
@@ -241,6 +260,18 @@ impl ReplayAnonymizer {
         field = ends_with("m_lobbyGameName"),
     )]
     fn lobby_name(&mut self, value: String) -> Option<String> {
+        if !self.rules.remove_lobby_name() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(
+        class = "CDOTAGamerulesProxy",
+        field = ends_with("m_lobbyLeagueID"),
+    )]
+    fn league_id(&mut self, value: u32) -> Option<u32> {
         if !self.rules.remove_lobby_name() {
             return None;
         }
