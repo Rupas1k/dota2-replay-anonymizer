@@ -30,7 +30,7 @@ export const optionGroups: OptionGroup[] = [
             title: "Steam IDs",
             description: "Remove Steam IDs from the replay.",
             inactiveDescription: "Keep Steam IDs.",
-            tooltip: "Main identifier that links player to their profiles",
+            tooltip: "Main identifier that links players to their profiles",
           },
           {
             key: "removePlayerNames",
