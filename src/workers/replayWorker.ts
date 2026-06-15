@@ -96,7 +96,6 @@ const handleMessage = ({ id, type, payload }: WorkerRequest) => {
       }
 
       try {
-        console.log("anonymize options", payload.options);
         console.time("worker anonymize: rewrite replay");
         const output = anonymize_loaded_replay(JSON.stringify(payload.options));
         console.timeEnd("worker anonymize: rewrite replay");
