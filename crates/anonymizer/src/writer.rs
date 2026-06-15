@@ -46,7 +46,6 @@ const ENTITY_TRACK_CLASSES: &[&str] = &[
 struct ReplayAnonymizer {
     rules: Box<dyn AnonymizeRules>,
     particles_seen: u32,
-    messages_added: u32,
 }
 
 impl ReplayAnonymizer {
@@ -57,7 +56,6 @@ impl ReplayAnonymizer {
         Self {
             rules: Box::new(rules),
             particles_seen: 0,
-            messages_added: 0,
         }
     }
 }
@@ -840,41 +838,6 @@ impl ReplayAnonymizer {
         }
 
         Ok(MessageRewrite::Rewrite)
-    }
-
-    #[rewrite_packet_messages]
-    fn promo(
-        &mut self,
-        ctx: &Context,
-        messages: &mut Vec<PacketMessage>,
-    ) -> Result<(), ParserError> {
-        if self.messages_added > 0 {
-            return Ok(());
-        }
-
-        let Ok(grp) = ctx.entities().get_by_class_name("CDOTAGamerulesProxy") else {
-            return Ok(());
-        };
-
-        let game_state = grp.get_property("m_pGameRules.m_nGameState")?.i32();
-        if game_state != DotaGameState::DotaGamerulesStatePreGame as i32 {
-            return Ok(());
-        }
-
-        let msg = CDotaUserMsgChatMessage {
-            message_text: "https://github.com/Rupas1k".to_string().into(),
-            channel_type: 11.into(),
-            ..Default::default()
-        };
-
-        messages.push(PacketMessage::new(
-            EDotaUserMessages::DotaUmChatMessage as i32,
-            msg.encode_to_vec(),
-        ));
-
-        self.messages_added += 1;
-
-        Ok(())
     }
 }
 
