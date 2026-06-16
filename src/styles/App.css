@@ -839,7 +839,7 @@ textarea {
   }
 
   &.is-neutral {
-    grid-template-columns: 22px minmax(0, 1fr);
+    grid-template-columns: 20px minmax(0, 1fr);
   }
 
   &.is-pro {
@@ -884,8 +884,16 @@ textarea {
   min-width: 0;
 }
 
+.team-panel.is-neutral .player-card {
+  align-items: center;
+  min-height: 66px;
+}
+
 .team-panel.is-neutral .player-card-main {
-  grid-template-columns: 1fr;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 0 0;
 }
 
 .player-check {
