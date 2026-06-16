@@ -159,7 +159,7 @@ pub fn quick_scan_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
     let playback_ticks = parser.replay_info().playback_ticks();
 
     parser.register_observer::<EnableEntities>();
-    parser.jump_to_tick(playback_ticks.max(0) as u32)?;
+    parser.jump_to_tick((playback_ticks.max(0) as u32) / 2)?;
 
     quick_scan_context(parser.context(), input.len(), playback_ticks)
 }
