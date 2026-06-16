@@ -268,6 +268,7 @@ fn upsert_player_option(
 
 fn parse_args() -> Result<Args> {
     let mut positionals = Vec::new();
+    let mut options = None;
     let mut jobs = 1;
     let mut args = env::args_os().skip(1);
 
@@ -286,12 +287,25 @@ fn parse_args() -> Result<Args> {
             continue;
         }
 
+        if arg == "--options" || arg == "-o" {
+            let Some(value) = args.next() else {
+                bail!(usage());
+            };
+
+            options = Some(PathBuf::from(value));
+            continue;
+        }
+
+        if let Some(value) = arg.to_str().and_then(|arg| arg.strip_prefix("--options=")) {
+            options = Some(PathBuf::from(value));
+            continue;
+        }
+
         positionals.push(arg);
     }
 
-    let (input, options, output) = match positionals.as_slice() {
-        [input, output] => (input.into(), None, output.into()),
-        [input, options, output] => (input.into(), Some(options.into()), output.into()),
+    let (input, output) = match positionals.as_slice() {
+        [input, output] => (input.into(), output.into()),
         _ => bail!(usage()),
     };
 
@@ -317,8 +331,8 @@ fn parse_jobs(value: &OsStr) -> Result<usize> {
 fn usage() -> String {
     [
         "Usage:",
-        "  d2-replay-anonymizer <input.dem> [options.json] <output.dem> [--jobs N]",
-        "  d2-replay-anonymizer <input_dir> [options.json] <output_dir> [--jobs N]",
+        "  d2ra <input.dem> <output.dem> [--options options.json] [--jobs N]",
+        "  d2ra <input_dir> <output_dir> [--options options.json] [--jobs N]",
     ]
     .join("\n")
 }

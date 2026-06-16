@@ -7,7 +7,7 @@ authors = ["Artem Rupasov <artemrupasov125@gmail.com>"]
 publish = false
 
 [[bin]]
-name = "d2-replay-anonymizer"
+name = "d2ra"
 path = "src/main.rs"
 
 [dependencies]
