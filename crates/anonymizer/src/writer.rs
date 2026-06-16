@@ -1,4 +1,4 @@
-use crate::options::{AnonymizeOptions, AnonymizeRules};
+use crate::options::AnonymizeRules;
 use crate::player::{is_source_tv, STEAM_ID64_BASE};
 use source2_demo::prelude::*;
 use source2_demo::proto::*;
@@ -824,6 +824,15 @@ impl ReplayAnonymizer {
         Ok(MessageRewrite::Drop)
     }
 
+    #[rewrite_packet_message]
+    fn remove_broadcasters_audio(
+        &mut self,
+        _msg: CSvcMsgVoiceData,
+    ) -> Result<MessageRewrite, ParserError> {
+        Ok(MessageRewrite::Drop)
+    }
+
+
     #[rewrite_demo_message]
     fn metadata(&mut self, msg: &mut CDemoFileInfo) -> Result<MessageRewrite, ParserError> {
         let Some(info) = &mut msg.game_info else {
@@ -863,10 +872,13 @@ impl ReplayAnonymizer {
     }
 }
 
-pub(crate) fn anonymize_replay_bytes_with_options(
+pub(crate) fn anonymize_replay_bytes_with_options<O>(
     input: &[u8],
-    options: AnonymizeOptions,
-) -> Result<Vec<u8>, ParserError> {
+    options: O,
+) -> Result<Vec<u8>, ParserError>
+where
+    O: AnonymizeRules + 'static,
+{
     let output = Cursor::new(Vec::new());
     let mut writer = DemoWriter::from_slice(input, output)?;
     writer.add_rewriter(ReplayAnonymizer::new(options));
@@ -876,13 +888,14 @@ pub(crate) fn anonymize_replay_bytes_with_options(
     Ok(output.into_inner())
 }
 
-pub(crate) fn anonymize_replay_with_options<R, W>(
+pub(crate) fn anonymize_replay_with_options<R, O, W>(
     input: R,
-    options: AnonymizeOptions,
+    options: O,
     output: W,
 ) -> Result<W, ParserError>
 where
     R: Read + Seek,
+    O: AnonymizeRules + 'static,
     W: Write + Seek,
 {
     let mut writer = DemoWriter::from_reader(input, output)?;

@@ -24,20 +24,24 @@ where
     reader::quick_scan_replay_reader(input)
 }
 
-pub fn anonymize_replay_bytes_with_options(
+pub fn anonymize_replay_bytes_with_options<O>(
     input: &[u8],
-    options: AnonymizeOptions,
-) -> Result<Vec<u8>, ParserError> {
+    options: O,
+) -> Result<Vec<u8>, ParserError>
+where
+    O: AnonymizeRules + 'static,
+{
     writer::anonymize_replay_bytes_with_options(input, options)
 }
 
-pub fn anonymize_replay_with_options<R, W>(
+pub fn anonymize_replay_with_options<R, O, W>(
     input: R,
-    options: AnonymizeOptions,
+    options: O,
     output: W,
 ) -> Result<W, ParserError>
 where
     R: Read + Seek,
+    O: AnonymizeRules + 'static,
     W: Write + Seek,
 {
     writer::anonymize_replay_with_options(input, options, output)
