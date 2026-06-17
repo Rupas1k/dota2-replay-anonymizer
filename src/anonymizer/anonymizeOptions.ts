@@ -48,7 +48,6 @@ const buildOptionSettings = (options: UiOptions): Omit<AnonymizeOptions, "player
     remove_rank_tier: true,
     remove_plus_subscriber: options.removeDotaPlusBadges,
     remove_guild_data: options.removeGuildData,
-    remove_selected_hero_badge: options.removeDotaPlusBadges,
     remove_player_camera_movements: options.removeCameraMovements,
     remove_player_mouse_movements: options.removeMouseMovements,
     remove_player_clicks: options.removeClickMovements,

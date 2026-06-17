@@ -388,7 +388,7 @@ impl ReplayAnonymizer {
         field = ends_with("m_unSelectedHeroBadgeXP"),
     )]
     fn player_resource_zero_badge(&mut self, field_name: &str, value: u32) -> Option<u32> {
-        if !self.rules.remove_selected_hero_badge() {
+        if !self.rules.remove_dota_plus_badges() {
             return None;
         }
 

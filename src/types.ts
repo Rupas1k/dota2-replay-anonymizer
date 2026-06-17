@@ -63,7 +63,6 @@ export type AnonymizeOptions = {
   remove_rank_tier: boolean;
   remove_plus_subscriber: boolean;
   remove_guild_data: boolean;
-  remove_selected_hero_badge: boolean;
   remove_player_camera_movements: boolean;
   remove_player_mouse_movements: boolean;
   remove_player_clicks: boolean;

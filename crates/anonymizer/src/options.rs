@@ -31,7 +31,6 @@ pub struct AnonymizeOptions {
     pub remove_rank_tier: bool,
     pub remove_plus_subscriber: bool,
     pub remove_guild_data: bool,
-    pub remove_selected_hero_badge: bool,
     pub remove_player_camera_movements: bool,
     pub remove_player_mouse_movements: bool,
     pub remove_player_clicks: bool,
@@ -71,7 +70,6 @@ pub trait AnonymizeRules {
     fn remove_rank_tier(&self) -> bool;
     fn remove_plus_subscriber(&self) -> bool;
     fn remove_guild_data(&self) -> bool;
-    fn remove_selected_hero_badge(&self) -> bool;
     fn remove_player_camera_movements(&self) -> bool;
     fn remove_player_mouse_movements(&self) -> bool;
     fn remove_player_clicks(&self) -> bool;
@@ -107,7 +105,6 @@ impl Default for AnonymizeOptions {
             remove_rank_tier: true,
             remove_plus_subscriber: true,
             remove_guild_data: true,
-            remove_selected_hero_badge: true,
             remove_player_camera_movements: false,
             remove_player_mouse_movements: false,
             remove_player_clicks: false,
@@ -233,10 +230,6 @@ impl AnonymizeRules for AnonymizeOptions {
 
     fn remove_guild_data(&self) -> bool {
         self.remove_guild_data
-    }
-
-    fn remove_selected_hero_badge(&self) -> bool {
-        self.remove_selected_hero_badge
     }
 
     fn remove_player_camera_movements(&self) -> bool {
