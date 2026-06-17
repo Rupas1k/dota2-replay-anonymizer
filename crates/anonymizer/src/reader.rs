@@ -123,18 +123,6 @@ impl ReplayReader {
     }
 }
 
-fn replay_read(input_bytes: usize, playback_ticks: i32, players: Vec<ReplayPlayer>) -> ReplayRead {
-    let mut players = players;
-
-    players.sort_by_key(|player| player.player_id);
-
-    ReplayRead {
-        input_bytes,
-        playback_ticks,
-        players,
-    }
-}
-
 pub fn read_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
     let mut parser = Parser::from_slice(input)?;
     let playback_ticks = parser.replay_info().playback_ticks();
@@ -142,9 +130,15 @@ pub fn read_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
 
     parser.run_to_end()?;
 
-    let players = reader.borrow().players.clone();
+    let mut players = reader.borrow().players.clone();
 
-    Ok(replay_read(input.len(), playback_ticks, players))
+    players.sort_by_key(|player| player.player_id);
+
+    Ok(ReplayRead {
+        input_bytes: input.len(),
+        playback_ticks,
+        players,
+    })
 }
 
 #[derive(Default)]
@@ -212,7 +206,11 @@ fn quick_scan_context(
             let hero_handle: u32 = property!(pr, "m_vecPlayerTeamData.{i:04}.m_hSelectedHero");
 
             if hero_handle == EMPTY_HANDLE {
-                return Ok(replay_read(input_bytes, playback_ticks, players));
+                return Ok(ReplayRead {
+                    input_bytes,
+                    playback_ticks,
+                    players,
+                })
             }
 
             entries.push(PlayerEntry {
@@ -248,5 +246,11 @@ fn quick_scan_context(
         }
     }
 
-    Ok(replay_read(input_bytes, playback_ticks, players))
+    players.sort_by_key(|player| player.player_id);
+
+    Ok(ReplayRead {
+        input_bytes,
+        playback_ticks,
+        players,
+    })
 }
