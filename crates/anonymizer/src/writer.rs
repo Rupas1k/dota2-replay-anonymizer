@@ -507,21 +507,13 @@ impl ReplayAnonymizer {
     )]
     fn team_player_steam_id(
         &mut self,
-        team_data: &Entity,
-        field_name: &str,
         value: u64,
     ) -> Option<u64> {
         if !self.rules.remove_player_steam_ids() {
             return None;
         }
 
-        let team_data_index = self.vector_index_from_field_name(field_name);
-        let player_id = team_data
-            .get_property(&format!("m_vecDataTeam.{team_data_index:04}.m_nPlayerID"))
-            .ok()?
-            .u32();
-
-        if !self.rules.should_anonymize_player_id(player_id) {
+        if !self.rules.should_anonymize_steam_id(value) {
             return None;
         }
 
