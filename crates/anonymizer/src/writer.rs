@@ -499,16 +499,59 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_field(
+        class = "CDOTA_PlayerResource",
+        field = any(
+            ends_with("m_bIsBroadcaster"),
+            ends_with("m_bIsBroadcasterChannelCameraman"),
+        ),
+    )]
+    fn remove_broadcaster_flags(&mut self, value: bool) -> Option<bool> {
+        if !self.rules.remove_broadcaster_info() {
+            return None;
+        }
+
+        self.replace_if_changed(value, false)
+    }
+
+    #[rewrite_field(
+        class = "CDOTA_PlayerResource",
+        field = any(
+            ends_with("m_iszBroadcasterChannelDescription"),
+            ends_with("m_iszBroadcasterChannelCountryCode"),
+            ends_with("m_iszBroadcasterChannelLanguageCode"),
+        ),
+    )]
+    fn remove_broadcaster_channel_names(&mut self, value: String) -> Option<String> {
+        if !self.rules.remove_broadcaster_info() {
+            return None;
+        }
+
+        self.zero(value)
+    }
+
+    #[rewrite_field(
+        class = "CDOTA_PlayerResource",
+        field = any(
+            ends_with("m_iBroadcasterChannel"),
+            ends_with("m_iBroadcasterChannelSlot"),
+        ),
+    )]
+    fn remove_broadcaster_channels(&mut self, value: u32) -> Option<u32> {
+        if !self.rules.remove_broadcaster_info() {
+            return None;
+        }
+
+        self.replace_if_changed(value, 6)
+    }
+
+    #[rewrite_field(
         class = any(
             "CDOTA_DataRadiant",
             "CDOTA_DataDire",
         ),
         field = ends_with("m_iPlayerSteamID"),
     )]
-    fn team_player_steam_id(
-        &mut self,
-        value: u64,
-    ) -> Option<u64> {
+    fn team_player_steam_id(&mut self, value: u64) -> Option<u64> {
         if !self.rules.remove_player_steam_ids() {
             return None;
         }
@@ -817,13 +860,16 @@ impl ReplayAnonymizer {
     }
 
     #[rewrite_packet_message]
-    fn remove_broadcasters_audio(
+    fn remove_broadcaster_audio(
         &mut self,
         _msg: CSvcMsgVoiceData,
     ) -> Result<MessageRewrite, ParserError> {
+        if !self.rules.remove_broadcaster_info() {
+            return Ok(MessageRewrite::Keep);
+        }
+
         Ok(MessageRewrite::Drop)
     }
-
 
     #[rewrite_demo_message]
     fn metadata(&mut self, msg: &mut CDemoFileInfo) -> Result<MessageRewrite, ParserError> {

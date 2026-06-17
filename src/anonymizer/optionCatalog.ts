@@ -166,6 +166,12 @@ export const optionGroups: OptionGroup[] = [
             description: "Clear custom lobby names.",
             inactiveDescription: "Keep lobby names.",
           },
+          {
+            key: "removeBroadcasterInfo",
+            title: "Broadcaster info",
+            description: "Clear broadcaster channels and voice data.",
+            inactiveDescription: "Keep broadcaster info.",
+          },
         ],
       },
       {

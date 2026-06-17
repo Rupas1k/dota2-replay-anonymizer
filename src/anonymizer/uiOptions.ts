@@ -26,6 +26,7 @@ export const defaultUiOptions: UiOptions = {
   removeCameraMovements: false,
   removeMouseMovements: false,
   removeClickMovements: false,
+  removeBroadcasterInfo: true,
   playerSelectionMode: "includeAll",
   proAnonymizeMode: "ignore",
   spectatorAnonymizeMode: "ignore",
@@ -158,6 +159,7 @@ export const uiOptionsFromJson = (value: unknown, current = createDefaultUiOptio
       current.removeMouseMovements,
     ),
     removeClickMovements: booleanValue(options.remove_player_clicks, current.removeClickMovements),
+    removeBroadcasterInfo: booleanValue(options.remove_broadcaster_info, current.removeBroadcasterInfo),
     playerSelectionMode:
       options.player_selection_mode === "exclude_all"
         ? "excludeAll"

@@ -67,6 +67,7 @@ export type AnonymizeOptions = {
   remove_player_camera_movements: boolean;
   remove_player_mouse_movements: boolean;
   remove_player_clicks: boolean;
+  remove_broadcaster_info: boolean;
 };
 
 export type WorkerRequestPayloads = {
@@ -153,6 +154,7 @@ export type UiOptions = {
   removeCameraMovements: boolean;
   removeMouseMovements: boolean;
   removeClickMovements: boolean;
+  removeBroadcasterInfo: boolean;
   playerSelectionMode: PlayerSelectionMode;
   proAnonymizeMode: ProAnonymizeMode;
   spectatorAnonymizeMode: SpectatorAnonymizeMode;

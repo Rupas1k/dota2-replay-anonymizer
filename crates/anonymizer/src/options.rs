@@ -35,6 +35,7 @@ pub struct AnonymizeOptions {
     pub remove_player_camera_movements: bool,
     pub remove_player_mouse_movements: bool,
     pub remove_player_clicks: bool,
+    pub remove_broadcaster_info: bool,
 }
 
 #[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq, Eq)]
@@ -74,6 +75,7 @@ pub trait AnonymizeRules {
     fn remove_player_camera_movements(&self) -> bool;
     fn remove_player_mouse_movements(&self) -> bool;
     fn remove_player_clicks(&self) -> bool;
+    fn remove_broadcaster_info(&self) -> bool;
 }
 
 impl Default for AnonymizeOptions {
@@ -109,6 +111,7 @@ impl Default for AnonymizeOptions {
             remove_player_camera_movements: false,
             remove_player_mouse_movements: false,
             remove_player_clicks: false,
+            remove_broadcaster_info: true,
         }
     }
 }
@@ -246,6 +249,10 @@ impl AnonymizeRules for AnonymizeOptions {
 
     fn remove_player_clicks(&self) -> bool {
         self.remove_player_clicks
+    }
+
+    fn remove_broadcaster_info(&self) -> bool {
+        self.remove_broadcaster_info
     }
 }
 
