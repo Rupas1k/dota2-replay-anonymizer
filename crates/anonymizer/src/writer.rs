@@ -850,6 +850,10 @@ impl ReplayAnonymizer {
         &mut self,
         msg: CUserMsgParticleManager,
     ) -> Result<MessageRewrite, ParserError> {
+        if !self.rules.remove_dota_plus_badges() {
+            return Ok(MessageRewrite::Keep)
+        }
+
         if self.particles_seen >= PARTICLES_TO_DROP || !is_particle_to_remove(&msg) {
             return Ok(MessageRewrite::Keep);
         }
