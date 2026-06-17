@@ -172,7 +172,7 @@ where
     let playback_ticks = parser.replay_info().playback_ticks();
 
     parser.register_observer::<EnableEntities>();
-    parser.jump_to_tick(playback_ticks.max(0) as u32)?;
+    parser.jump_to_tick((playback_ticks.max(0) as u32) / 2)?;
 
     quick_scan_context(parser.context(), 0, playback_ticks)
 }
