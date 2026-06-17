@@ -16,7 +16,7 @@ pub struct ReplayRead {
 #[derive(Default)]
 struct ReplayReader {
     players: Vec<ReplayPlayer>,
-    pub handles: HashSet<u32>,
+    handles: HashSet<u32>,
     hero_handles_loaded: bool,
 }
 
