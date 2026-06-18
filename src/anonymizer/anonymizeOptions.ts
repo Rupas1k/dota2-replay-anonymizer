@@ -29,6 +29,7 @@ const buildOptionSettings = (options: UiOptions): Omit<AnonymizeOptions, "player
     remove_combat_log: options.removeCombatLog,
     remove_match_id: options.removeMatchId,
     remove_lobby_name: options.removeLobbyName,
+    remove_league_info: options.removeLeagueInfo,
     remove_chat_messages: options.removeChatMessages,
     remove_chat_wheel: options.removeChatWheel,
     remove_map_pings: options.removeMapPings,

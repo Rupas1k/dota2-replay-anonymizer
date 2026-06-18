@@ -44,6 +44,7 @@ export type AnonymizeOptions = {
   remove_combat_log: boolean;
   remove_match_id: boolean;
   remove_lobby_name: boolean;
+  remove_league_info: boolean;
   remove_chat_messages: boolean;
   remove_chat_wheel: boolean;
   remove_map_pings: boolean;
@@ -132,6 +133,7 @@ export type UiOptions = {
   removeCombatLog: boolean;
   removeMatchId: boolean;
   removeLobbyName: boolean;
+  removeLeagueInfo: boolean;
   removeChatMessages: boolean;
   removeChatWheel: boolean;
   removeMapPings: boolean;

@@ -167,6 +167,12 @@ export const optionGroups: OptionGroup[] = [
             inactiveDescription: "Keep lobby names.",
           },
           {
+            key: "removeLeagueInfo",
+            title: "League info",
+            description: "Clear league IDs from the replay.",
+            inactiveDescription: "Keep league IDs.",
+          },
+          {
             key: "removeBroadcasterInfo",
             title: "Broadcaster info",
             description: "Clear broadcaster channels and voice data.",
@@ -204,7 +210,7 @@ export const optionGroups: OptionGroup[] = [
         ],
       },
       {
-        title: "Logs and effects",
+        title: "Extra",
         items: [
           {
             key: "removeCombatLog",

@@ -12,6 +12,7 @@ pub struct AnonymizeOptions {
     pub remove_combat_log: bool,
     pub remove_match_id: bool,
     pub remove_lobby_name: bool,
+    pub remove_league_info: bool,
     pub remove_chat_messages: bool,
     pub remove_chat_wheel: bool,
     pub remove_map_pings: bool,
@@ -50,6 +51,7 @@ pub trait AnonymizeRules {
     fn remove_combat_log(&self) -> bool;
     fn remove_match_id(&self) -> bool;
     fn remove_lobby_name(&self) -> bool;
+    fn remove_league_info(&self) -> bool;
     fn remove_chat_messages(&self) -> bool;
     fn remove_chat_wheel(&self) -> bool;
     fn remove_map_pings(&self) -> bool;
@@ -84,6 +86,7 @@ impl Default for AnonymizeOptions {
             remove_combat_log: false,
             remove_match_id: true,
             remove_lobby_name: true,
+            remove_league_info: true,
             remove_chat_messages: true,
             remove_chat_wheel: true,
             remove_map_pings: false,
@@ -151,6 +154,10 @@ impl AnonymizeRules for AnonymizeOptions {
 
     fn remove_lobby_name(&self) -> bool {
         self.remove_lobby_name
+    }
+
+    fn remove_league_info(&self) -> bool {
+        self.remove_league_info
     }
 
     fn remove_chat_messages(&self) -> bool {

@@ -272,7 +272,7 @@ impl ReplayAnonymizer {
         field = ends_with("m_lobbyLeagueID"),
     )]
     fn league_id(&mut self, value: u32) -> Option<u32> {
-        if !self.rules.remove_lobby_name() {
+        if !self.rules.remove_league_info() {
             return None;
         }
 
