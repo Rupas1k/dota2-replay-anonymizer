@@ -11,9 +11,9 @@ Processing is local. The CLI works with files on disk, and the browser app runs 
 - Profile details: Dota Plus levels, icons, and badges; guild ID, logo, colors, and tier.
 - Input traces: camera movements, cursor movements, and clicks.
 - Communication: text chat, chat wheel lines, map pings, and minimap drawings.
-- Global identifiers: match ID, custom lobby name, league ID, broadcaster channels, and broadcaster voice data.
+- Global identifiers: match ID, lobby name, league ID.
 - Team identity: Radiant and Dire team names, tags, tournament team IDs, logo, base logo, and banner logo.
-- Extra: combat log messages.
+- Extra: combat log messages, broadcaster channels, and broadcaster voice data
 
 ## Interfaces
 
@@ -293,7 +293,7 @@ If the repository or Pages path changes, update the `base` value in `vite.config
 ## Project Layout
 
 | Path                | Purpose                                                                  |
-| ------------------- | ------------------------------------------------------------------------ |
+|---------------------|--------------------------------------------------------------------------|
 | `crates/anonymizer` | Core Rust library for reading, inspecting, and rewriting replay bytes.   |
 | `crates/cli`        | `d2ra` CLI wrapper around the library.                                   |
 | `crates/wasm`       | `wasm-bindgen` bindings used by the browser app.                         |
