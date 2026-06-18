@@ -57,13 +57,13 @@ fn inspection_to_js(replay: ReplayRead) -> Result<JsValue, JsValue> {
     Ok(value.into())
 }
 
-fn read_replay(input: &[u8]) -> Result<JsValue, JsValue> {
-    let replay = d2_replay_anonymizer::read_replay(input).map_err(js_error)?;
+fn inspect_replay(input: &[u8]) -> Result<JsValue, JsValue> {
+    let replay = d2_replay_anonymizer::inspect(input).map_err(js_error)?;
     inspection_to_js(replay)
 }
 
-fn quick_scan_replay(input: &[u8]) -> Result<JsValue, JsValue> {
-    let replay = d2_replay_anonymizer::quick_scan_replay(input).map_err(js_error)?;
+fn scan_replay(input: &[u8]) -> Result<JsValue, JsValue> {
+    let replay = d2_replay_anonymizer::scan(input).map_err(js_error)?;
     inspection_to_js(replay)
 }
 
@@ -97,7 +97,7 @@ pub fn inspect_loaded_replay() -> Result<JsValue, JsValue> {
             .as_deref()
             .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
 
-        read_replay(input)
+        inspect_replay(input)
     })
 }
 
@@ -109,7 +109,7 @@ pub fn quick_scan_loaded_replay() -> Result<JsValue, JsValue> {
             .as_deref()
             .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
 
-        quick_scan_replay(input)
+        scan_replay(input)
     })
 }
 
@@ -138,7 +138,7 @@ pub fn anonymize_loaded_replay(options: &str) -> Result<Uint8Array, JsValue> {
             .as_deref()
             .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
 
-        d2_replay_anonymizer::anonymize_replay_bytes_with_options(input, options).map_err(js_error)
+        d2_replay_anonymizer::anonymize_bytes(input, options).map_err(js_error)
     })?;
 
     OUTPUT.with(|stored| {

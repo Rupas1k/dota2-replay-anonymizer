@@ -871,6 +871,9 @@ impl ReplayAnonymizer {
 
         if self.rules.remove_match_id() {
             dota.match_id = 0.into();
+        }
+
+        if self.rules.remove_league_info() {
             dota.leagueid = 0.into();
         }
 
@@ -898,10 +901,7 @@ impl ReplayAnonymizer {
     }
 }
 
-pub(crate) fn anonymize_replay_bytes_with_options<O>(
-    input: &[u8],
-    options: O,
-) -> Result<Vec<u8>, ParserError>
+pub(crate) fn anonymize_bytes<O>(input: &[u8], options: O) -> Result<Vec<u8>, ParserError>
 where
     O: AnonymizeRules + 'static,
 {
@@ -914,11 +914,7 @@ where
     Ok(output.into_inner())
 }
 
-pub(crate) fn anonymize_replay_with_options<R, O, W>(
-    input: R,
-    options: O,
-    output: W,
-) -> Result<W, ParserError>
+pub(crate) fn anonymize<R, O, W>(input: R, options: O, output: W) -> Result<W, ParserError>
 where
     R: Read + Seek,
     O: AnonymizeRules + 'static,

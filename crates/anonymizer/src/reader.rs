@@ -123,7 +123,7 @@ impl ReplayReader {
     }
 }
 
-pub fn read_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
+pub fn inspect(input: &[u8]) -> Result<ReplayRead, ParserError> {
     let mut parser = Parser::from_slice(input)?;
     let playback_ticks = parser.replay_info().playback_ticks();
     let reader = parser.register_observer::<ReplayReader>();
@@ -148,7 +148,7 @@ struct EnableEntities {}
 #[uses_entities]
 impl EnableEntities {}
 
-pub fn quick_scan_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
+pub fn scan(input: &[u8]) -> Result<ReplayRead, ParserError> {
     let mut parser = Parser::from_slice(input)?;
     let playback_ticks = parser.replay_info().playback_ticks();
 
@@ -158,7 +158,7 @@ pub fn quick_scan_replay(input: &[u8]) -> Result<ReplayRead, ParserError> {
     quick_scan_context(parser.context(), input.len(), playback_ticks)
 }
 
-pub fn quick_scan_replay_reader<R>(input: R) -> Result<ReplayRead, ParserError>
+pub fn scan_reader<R>(input: R) -> Result<ReplayRead, ParserError>
 where
     R: Read + Seek,
 {

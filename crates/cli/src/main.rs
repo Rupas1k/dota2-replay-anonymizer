@@ -10,8 +10,7 @@ use std::{
 
 use anyhow::{anyhow, bail, Context, Result};
 use d2_replay_anonymizer::{
-    anonymize_replay_with_options, quick_scan_replay_reader, AnonymizeOptions, PlayerOption,
-    PlayerSelectionMode,
+    anonymize, scan_reader, AnonymizeOptions, PlayerOption, PlayerSelectionMode,
 };
 
 const SOURCE_TV_STEAM_ID_THRESHOLD: u64 = 90000000000000000;
@@ -198,7 +197,7 @@ fn run_job(job: ReplayJob, options: &AnonymizeOptions) -> Result<()> {
     let output = File::create(&job.output)
         .with_context(|| format!("failed to create {}", job.output.display()))?;
 
-    anonymize_replay_with_options(BufReader::new(input), options, BufWriter::new(output))
+    anonymize(BufReader::new(input), options, BufWriter::new(output))
         .with_context(|| format!("failed to anonymize {}", job.input.display()))?;
 
     Ok(())
@@ -212,7 +211,7 @@ fn add_steam_id_overrides(input: &Path, options: &mut AnonymizeOptions) -> Resul
         return Ok(());
     }
 
-    let replay = quick_scan_replay_reader(BufReader::new(
+    let replay = scan_reader(BufReader::new(
         File::open(input).with_context(|| format!("failed to open {}", input.display()))?,
     ))
     .with_context(|| format!("failed to inspect {}", input.display()))?;
