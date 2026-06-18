@@ -1,6 +1,6 @@
 [package]
 name = "d2-replay-anonymizer"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 license = "MIT"
 authors = ["Artem Rupasov <artemrupasov125@gmail.com>"]
