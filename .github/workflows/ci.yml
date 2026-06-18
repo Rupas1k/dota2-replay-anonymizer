@@ -53,6 +53,9 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
+      - name: Generate WASM bindings
+        run: npm run build:wasm
+
       - name: Lint
         run: npm run lint
 
