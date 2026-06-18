@@ -45,16 +45,12 @@ const postSuccess = <Type extends WorkerRequestType>(
 };
 
 const readInspection = (buffer: ArrayBuffer, mode: "quick" | "full"): ReplayInspection => {
-  console.time("worker inspect: load replay into wasm memory");
   load_replay_bytes(new Uint8Array(buffer));
-  console.timeEnd("worker inspect: load replay into wasm memory");
 
-  console.time(`worker inspect: ${mode} read replay metadata`);
   const inspection =
     mode === "full"
       ? (inspect_loaded_replay() as ReplayInspection)
       : (quick_scan_loaded_replay() as ReplayInspection);
-  console.timeEnd(`worker inspect: ${mode} read replay metadata`);
 
   if (!inspection || !Array.isArray(inspection.players)) {
     throw new Error("Replay inspection did not return players.");
@@ -65,56 +61,57 @@ const readInspection = (buffer: ArrayBuffer, mode: "quick" | "full"): ReplayInsp
 
 const handleMessage = ({ id, type, payload }: WorkerRequest) => {
   try {
-    if (type === "inspect") {
-      replayLoaded = false;
-      clear_replay();
-      try {
-        const inspection = readInspection(payload.buffer, payload.mode ?? "quick");
-        detachBuffer(payload.buffer);
-        replayLoaded = true;
-        postSuccess(id, type, { inspection });
-      } finally {
-        detachBuffer(payload.buffer);
-      }
-      return;
-    }
-
-    if (type === "anonymize") {
-      if (!replayLoaded && payload.buffer) {
+    switch (type) {
+      case "inspect": {
+        replayLoaded = false;
+        clear_replay();
         try {
-          console.time("worker anonymize: load replay into wasm memory");
-          load_replay_bytes(new Uint8Array(payload.buffer));
-          console.timeEnd("worker anonymize: load replay into wasm memory");
+          const inspection = readInspection(payload.buffer, payload.mode ?? "quick");
           replayLoaded = true;
+          postSuccess(id, type, { inspection });
         } finally {
           detachBuffer(payload.buffer);
         }
+        return;
       }
 
-      if (!replayLoaded) {
-        throw new Error("No replay loaded.");
+      case "anonymize": {
+        if (!replayLoaded && payload.buffer) {
+          try {
+            load_replay_bytes(new Uint8Array(payload.buffer));
+            replayLoaded = true;
+          } finally {
+            detachBuffer(payload.buffer);
+          }
+        }
+
+        if (!replayLoaded) {
+          throw new Error("No replay loaded.");
+        }
+
+        let releasedOutput = false;
+
+        try {
+          const output = anonymize_loaded_replay(JSON.stringify(payload.options));
+          const blob = new Blob([output], {
+            type: "application/octet-stream",
+          });
+          release_anonymized_replay();
+          releasedOutput = true;
+          clear_replay();
+          replayLoaded = false;
+          postSuccess(id, type, { blob });
+        } finally {
+          if (!releasedOutput) {
+            release_anonymized_replay();
+          }
+        }
+        return;
       }
 
-      try {
-        console.time("worker anonymize: rewrite replay");
-        const output = anonymize_loaded_replay(JSON.stringify(payload.options));
-        console.timeEnd("worker anonymize: rewrite replay");
-        console.time("worker anonymize: create blob");
-        const blob = new Blob([output], {
-          type: "application/octet-stream",
-        });
-        console.timeEnd("worker anonymize: create blob");
-        release_anonymized_replay();
-        clear_replay();
-        replayLoaded = false;
-        postSuccess(id, type, { blob });
-      } finally {
-        release_anonymized_replay();
-      }
-      return;
+      default:
+        throw new Error("Unknown worker message.");
     }
-
-    throw new Error(`Unknown worker message: ${type}`);
   } catch (error) {
     postError(id, error);
   }

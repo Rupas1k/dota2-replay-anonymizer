@@ -292,13 +292,13 @@ If the repository or Pages path changes, update the `base` value in `vite.config
 
 ## Project Layout
 
-| Path | Purpose |
-| --- | --- |
-| `crates/anonymizer` | Core Rust library for reading, inspecting, and rewriting replay bytes. |
-| `crates/cli` | `d2ra` CLI wrapper around the library. |
-| `crates/wasm` | `wasm-bindgen` bindings used by the browser app. |
-| `src` | React + Vite browser app and replay worker. |
-| `src/anonymizer` | Browser-side option mapping, player-rule handling, and OpenDota lookups. |
+| Path                | Purpose                                                                  |
+| ------------------- | ------------------------------------------------------------------------ |
+| `crates/anonymizer` | Core Rust library for reading, inspecting, and rewriting replay bytes.   |
+| `crates/cli`        | `d2ra` CLI wrapper around the library.                                   |
+| `crates/wasm`       | `wasm-bindgen` bindings used by the browser app.                         |
+| `src`               | React + Vite browser app and replay worker.                              |
+| `src/anonymizer`    | Browser-side option mapping, player-rule handling, and OpenDota lookups. |
 
 ## Development Checks
 

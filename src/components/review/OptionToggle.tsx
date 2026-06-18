@@ -28,9 +28,7 @@ export function OptionToggle({ option, options, onOptionChange }: OptionTogglePr
       <span className="option-copy">
         <span className="option-title-row">
           <span>
-            <strong>
-              {option.title}
-            </strong>
+            <strong>{option.title}</strong>
             {option.tooltip && <InfoTooltip text={option.tooltip} />}
           </span>
         </span>

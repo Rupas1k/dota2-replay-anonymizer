@@ -119,7 +119,9 @@ export function PlayerCard({
 
       {team !== "neutral" ? (
         <div className="hero-portrait" aria-hidden="true">
-          {heroImageUrl(hero) ? <img src={heroImageUrl(hero) ?? undefined} alt="" loading="lazy" /> : null}
+          {heroImageUrl(hero) ? (
+            <img src={heroImageUrl(hero) ?? undefined} alt="" loading="lazy" />
+          ) : null}
         </div>
       ) : null}
 

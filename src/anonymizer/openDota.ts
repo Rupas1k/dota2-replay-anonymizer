@@ -50,6 +50,15 @@ const numberValue = (value: unknown) => {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
+const trySetStoredValue = (key: string, value: unknown) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 function normalizeProPlayer(player: OpenDotaProPlayerResponse): PlayerProfileLookup | null {
   const accountId = numberValue(player.account_id);
   if (!accountId) {
@@ -187,28 +196,17 @@ function loadStoredHeroMap() {
 }
 
 function saveStoredProPlayerMap(proPlayers: Map<number, PlayerProfileLookup>) {
-  try {
-    const players = Array.from(proPlayers.values());
-    localStorage.setItem(
-      proPlayerStorageKey,
-      JSON.stringify({
-        cachedAt: Date.now(),
-        players,
-      } satisfies StoredProPlayers),
-    );
-  } catch {}
+  trySetStoredValue(proPlayerStorageKey, {
+    cachedAt: Date.now(),
+    players: Array.from(proPlayers.values()),
+  } satisfies StoredProPlayers);
 }
 
 function saveStoredHeroMap(heroes: Map<number, HeroLookup>) {
-  try {
-    localStorage.setItem(
-      heroStorageKey,
-      JSON.stringify({
-        cachedAt: Date.now(),
-        heroes: Array.from(heroes.values()),
-      } satisfies StoredHeroes),
-    );
-  } catch {}
+  trySetStoredValue(heroStorageKey, {
+    cachedAt: Date.now(),
+    heroes: Array.from(heroes.values()),
+  } satisfies StoredHeroes);
 }
 
 async function fetchProPlayerMap() {

@@ -25,27 +25,27 @@ export function useReplayWorker() {
     });
     workerRef.current = worker;
 
-    worker.addEventListener("message", (event: MessageEvent<WorkerResponse>) => {
-      if ("type" in event.data && event.data.type === "ready") {
+    worker.addEventListener("message", ({ data }: MessageEvent<WorkerResponse>) => {
+      if ("type" in data && data.type === "ready") {
         setWorkerReady(true);
         setWorkerError(null);
         return;
       }
 
-      if (!("id" in event.data)) {
+      if (!("id" in data)) {
         return;
       }
 
-      const request = requests.current.get(event.data.id);
+      const request = requests.current.get(data.id);
       if (!request) {
         return;
       }
 
-      requests.current.delete(event.data.id);
-      if ("ok" in event.data && event.data.ok) {
-        request.resolve(event.data.payload);
-      } else if ("error" in event.data) {
-        request.reject(new Error(event.data.error || "Worker failed."));
+      requests.current.delete(data.id);
+      if ("ok" in data && data.ok) {
+        request.resolve(data.payload);
+      } else if ("error" in data) {
+        request.reject(new Error(data.error || "Worker failed."));
       }
     });
 
@@ -55,6 +55,9 @@ export function useReplayWorker() {
 
     return () => {
       worker.terminate();
+      for (const request of requests.current.values()) {
+        request.reject(new Error("Worker terminated."));
+      }
       requests.current.clear();
     };
   }, []);

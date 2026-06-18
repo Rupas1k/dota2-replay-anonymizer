@@ -100,7 +100,11 @@ export function PlayerRulesPanel({ options, onOptionsChange }: PlayerRulesPanelP
           Spectators
           <InfoTooltip text="Full scan may be needed to get full spectator list" />
         </span>
-        <div className="segmented-control is-three" role="group" aria-label="Spectator player override">
+        <div
+          className="segmented-control is-three"
+          role="group"
+          aria-label="Spectator player override"
+        >
           <button
             type="button"
             className={options.spectatorAnonymizeMode === "ignore" ? "is-active" : ""}

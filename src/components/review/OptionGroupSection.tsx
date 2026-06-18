@@ -8,11 +8,7 @@ type OptionGroupSectionProps = {
   onOptionChange: (key: UiOptionKey, value: boolean) => void;
 };
 
-export function OptionGroupSection({
-  group,
-  options,
-  onOptionChange,
-}: OptionGroupSectionProps) {
+export function OptionGroupSection({ group, options, onOptionChange }: OptionGroupSectionProps) {
   return (
     <section className="option-group">
       <header className="option-group-head">

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
-import { buildAnonymizeOptions, buildExportedAnonymizeOptions } from "../anonymizer/anonymizeOptions";
+import {
+  buildAnonymizeOptions,
+  buildExportedAnonymizeOptions,
+} from "../anonymizer/anonymizeOptions";
 import { findOpenDotaHeroes, findOpenDotaProProfiles } from "../anonymizer/openDota";
 import { buildPlayerState } from "../anonymizer/playerRules";
 import type {
@@ -14,11 +17,7 @@ import type {
   UiOptionKey,
   UiOptions,
 } from "../types";
-import {
-  createDefaultUiOptions,
-  loadUiOptions,
-  saveUiOptions,
-} from "../anonymizer/uiOptions";
+import { createDefaultUiOptions, loadUiOptions, saveUiOptions } from "../anonymizer/uiOptions";
 import { anonymizedReplayName, downloadBlob, optionsJsonName } from "../utils";
 import { useReplayWorker } from "./useReplayWorker";
 
@@ -84,17 +83,19 @@ export function useReplayAnonymizer() {
 
     let cancelled = false;
 
-    void Promise.all([
-      findOpenDotaProProfiles(inspection.players),
-      findOpenDotaHeroes(inspection.players),
-    ]).then(([profiles, heroes]) => {
-      if (cancelled) {
-        return;
-      }
+    const loadPlayerMetadata = async () => {
+      const [profiles, heroes] = await Promise.all([
+        findOpenDotaProProfiles(inspection.players),
+        findOpenDotaHeroes(inspection.players),
+      ]);
 
-      setPlayerProfiles(profiles);
-      setHeroesById(heroes);
-    });
+      if (!cancelled) {
+        setPlayerProfiles(profiles);
+        setHeroesById(heroes);
+      }
+    };
+
+    void loadPlayerMetadata();
 
     return () => {
       cancelled = true;
@@ -115,13 +116,8 @@ export function useReplayAnonymizer() {
   const inspectLoadedFile = useCallback(
     async (nextFile: File, mode: "quick" | "full") => {
       setStatus(mode === "full" ? "Running full replay scan..." : "Inspecting replay...");
-      console.time(`replay inspect ${mode}: load file into browser memory`);
       const buffer = await nextFile.arrayBuffer();
-      console.timeEnd(`replay inspect ${mode}: load file into browser memory`);
-
-      console.time(`replay inspect ${mode}: worker total`);
       const response = await workerCall("inspect", { buffer, mode }, [buffer]);
-      console.timeEnd(`replay inspect ${mode}: worker total`);
 
       const nextInspection = response.inspection;
       setInspection(nextInspection);
@@ -254,30 +250,22 @@ export function useReplayAnonymizer() {
     setStatus("Options restored to defaults.");
   }, []);
 
-  const readOptions = useCallback((): AnonymizeOptions | null => {
-    if (!inspection) {
-      return null;
+  const anonymizeReplay = useCallback(async () => {
+    if (!file || !inspection) {
+      setStatus("Choose and inspect a replay first.");
+      return;
     }
 
-    return buildAnonymizeOptions({
+    const anonymizeOptions = buildAnonymizeOptions({
       inspection,
       playerState,
       options,
     });
-  }, [inspection, options, playerState]);
-
-  const anonymizeReplay = useCallback(async () => {
-    const anonymizeOptions = readOptions();
-    if (!file || !inspection || !anonymizeOptions) {
-      setStatus("Choose and inspect a replay first.");
-      return;
-    }
 
     setBusy(true);
     setStatus("Anonymizing replay...");
 
     try {
-      console.time("replay anonymize: total");
       const payload: { options: AnonymizeOptions; buffer?: ArrayBuffer } = {
         options: anonymizeOptions,
       };
@@ -285,31 +273,23 @@ export function useReplayAnonymizer() {
 
       if (!replayResident) {
         setStatus("Reloading replay...");
-        console.time("replay anonymize: load file into browser memory");
         const buffer = await file.arrayBuffer();
-        console.timeEnd("replay anonymize: load file into browser memory");
         payload.buffer = buffer;
         transfer.push(buffer);
         setStatus("Anonymizing replay...");
       }
 
-      console.time("replay anonymize: worker");
       const { blob } = await workerCall("anonymize", payload, transfer);
-      console.timeEnd("replay anonymize: worker");
 
-      console.time("replay anonymize: download");
       downloadBlob(blob, outputFileName.trim() || anonymizedReplayName(file.name));
-      console.timeEnd("replay anonymize: download");
-      console.timeEnd("replay anonymize: total");
       setReplayResident(false);
       setStatus("Done. The anonymized replay was downloaded.");
     } catch (error) {
-      console.timeEnd("replay anonymize: total");
       setStatus(error instanceof Error ? error.message : String(error));
     } finally {
       setBusy(false);
     }
-  }, [file, inspection, outputFileName, readOptions, replayResident, workerCall]);
+  }, [file, inspection, options, outputFileName, playerState, replayResident, workerCall]);
 
   const exportOptionsJson = useCallback(() => {
     const jsonOptions = buildExportedAnonymizeOptions(options);

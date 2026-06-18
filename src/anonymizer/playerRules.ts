@@ -10,8 +10,7 @@ import { playerKey, steamIdText } from "../utils";
 
 const normalizeSteamId = (steamId: string) => steamId.trim().toLowerCase();
 
-const steamIdSet = (values: string[]) =>
-  new Set(values.map(normalizeSteamId).filter(Boolean));
+const steamIdSet = (values: string[]) => new Set(values.map(normalizeSteamId).filter(Boolean));
 
 type PlayerRuleContext = {
   options: UiOptions;

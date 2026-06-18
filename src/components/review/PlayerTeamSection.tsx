@@ -1,5 +1,11 @@
 import { heroForPlayer, type PlayerTeamKind } from "../../anonymizer/playerDisplay";
-import type { HeroLookup, PlayerProfileLookup, PlayerState, PlayerStateMap, ReplayPlayer } from "../../types";
+import type {
+  HeroLookup,
+  PlayerProfileLookup,
+  PlayerState,
+  PlayerStateMap,
+  ReplayPlayer,
+} from "../../types";
 import { playerKey, steamIdText } from "../../utils";
 import { PlayerCard, playerStateFor } from "./PlayerCard";
 

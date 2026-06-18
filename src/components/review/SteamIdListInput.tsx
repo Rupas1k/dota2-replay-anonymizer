@@ -48,8 +48,7 @@ export function SteamIdListInput({ label, values, onChange }: SteamIdListInputPr
   const countText = values.length === 1 ? "1 Steam ID" : `${values.length} Steam IDs`;
   const invalidText =
     parsed.invalid.length === 1 ? "1 invalid value" : `${parsed.invalid.length} invalid values`;
-  const duplicateText =
-    parsed.duplicates === 1 ? "1 duplicate" : `${parsed.duplicates} duplicates`;
+  const duplicateText = parsed.duplicates === 1 ? "1 duplicate" : `${parsed.duplicates} duplicates`;
 
   useEffect(() => {
     if (!editing) {

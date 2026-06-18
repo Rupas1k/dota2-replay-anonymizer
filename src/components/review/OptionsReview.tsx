@@ -9,11 +9,7 @@ type OptionsReviewProps = {
   onOptionsChange: (patch: Partial<UiOptions>) => void;
 };
 
-export function OptionsReview({
-  options,
-  onOptionChange,
-  onOptionsChange,
-}: OptionsReviewProps) {
+export function OptionsReview({ options, onOptionChange, onOptionsChange }: OptionsReviewProps) {
   return (
     <section className="review-section options-review">
       <div className="option-board">

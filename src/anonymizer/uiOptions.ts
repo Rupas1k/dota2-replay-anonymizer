@@ -51,12 +51,25 @@ const stringArrayValue = (value: unknown) => {
   }
 
   return value
-    .map((entry) => (typeof entry === "number" || typeof entry === "string" ? String(entry).trim() : ""))
+    .map((entry) =>
+      typeof entry === "number" || typeof entry === "string" ? String(entry).trim() : "",
+    )
     .filter(Boolean);
 };
 
+const trySetStorageItem = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const savedPlayerSelectionMode = (value: unknown) => {
-  return value === "excludeAll" || value === "includeAll" ? value : defaultUiOptions.playerSelectionMode;
+  return value === "excludeAll" || value === "includeAll"
+    ? value
+    : defaultUiOptions.playerSelectionMode;
 };
 
 const savedProAnonymizeMode = (value: unknown) => {
@@ -101,7 +114,5 @@ export const loadUiOptions = (): UiOptions => {
 };
 
 export const saveUiOptions = (options: UiOptions) => {
-  try {
-    localStorage.setItem(uiOptionsStorageKey, JSON.stringify(options));
-  } catch {}
+  trySetStorageItem(uiOptionsStorageKey, JSON.stringify(options));
 };

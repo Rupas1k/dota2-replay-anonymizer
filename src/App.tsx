@@ -30,7 +30,7 @@ export default function App() {
           onFileChange={replay.handleFileChange}
           onOutputFileNameChange={replay.setOutputFileName}
           onRestoreDefaultOptions={replay.restoreDefaultOptions}
-          onRunFullScan={replay.runFullScan}
+          onRunFullScan={() => void replay.runFullScan()}
         />
 
         <ReviewPanel
