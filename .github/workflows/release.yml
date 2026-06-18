@@ -30,10 +30,6 @@ jobs:
             platform: windows-x86_64
             binary: d2ra.exe
             archive: zip
-          - os: macos-13
-            platform: macos-x86_64
-            binary: d2ra
-            archive: tar.gz
           - os: macos-14
             platform: macos-aarch64
             binary: d2ra
