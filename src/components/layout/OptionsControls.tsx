@@ -1,25 +1,18 @@
-import type { ChangeEvent, RefObject } from "react";
 import type { ReplayInspection, ReviewTab } from "../../types";
 
 type OptionsControlsProps = {
   activeTab: ReviewTab;
   inspection: ReplayInspection | null;
-  optionsInputRef: RefObject<HTMLInputElement>;
   onActiveTabChange: (tab: ReviewTab) => void;
   onExportOptionsJson: () => void;
-  onImportOptionsJson: () => void;
-  onOptionsJsonChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onRestoreDefaultOptions: () => void;
 };
 
 export function OptionsControls({
   activeTab,
   inspection,
-  optionsInputRef,
   onActiveTabChange,
   onExportOptionsJson,
-  onImportOptionsJson,
-  onOptionsJsonChange,
   onRestoreDefaultOptions,
 }: OptionsControlsProps) {
   const optionsButtonText = !inspection
@@ -54,21 +47,11 @@ export function OptionsControls({
           <button type="button" onClick={onRestoreDefaultOptions}>
             Restore
           </button>
-          <button type="button" onClick={onImportOptionsJson}>
-            Import JSON
-          </button>
           <button type="button" onClick={onExportOptionsJson}>
             Export JSON
           </button>
         </div>
       </div>
-      <input
-        ref={optionsInputRef}
-        type="file"
-        accept=".json,application/json"
-        hidden
-        onChange={onOptionsJsonChange}
-      />
     </section>
   );
 }

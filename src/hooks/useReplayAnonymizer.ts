@@ -18,15 +18,12 @@ import {
   createDefaultUiOptions,
   loadUiOptions,
   saveUiOptions,
-  uiOptionsFromJson,
 } from "../anonymizer/uiOptions";
-import { anonymizedReplayName, downloadBlob, optionsJsonName, playerKey, steamIdText } from "../utils";
+import { anonymizedReplayName, downloadBlob, optionsJsonName } from "../utils";
 import { useReplayWorker } from "./useReplayWorker";
 
 export function useReplayAnonymizer() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const optionsInputRef = useRef<HTMLInputElement | null>(null);
-  const importedPlayersRef = useRef<Map<string, boolean> | null>(null);
   const { workerReady, workerError, workerCall } = useReplayWorker();
 
   const [status, setStatus] = useState("Loading WASM...");
@@ -62,33 +59,14 @@ export function useReplayAnonymizer() {
       return;
     }
 
-    setPlayerState((current) => {
-      const next = buildPlayerState({
+    setPlayerState((current) =>
+      buildPlayerState({
         inspection,
         options,
         profiles: playerProfiles,
         previous: current,
-      });
-      const importedPlayers = importedPlayersRef.current;
-
-      if (!importedPlayers) {
-        return next;
-      }
-
-      importedPlayersRef.current = null;
-      return Object.fromEntries(
-        inspection.players.map((player) => {
-          const key = playerKey(player);
-          const anonymize =
-            importedPlayers.get(key) ??
-            importedPlayers.get(`steam:${steamIdText(player.steam_id)}`) ??
-            next[key]?.anonymize ??
-            true;
-
-          return [key, { ...next[key], anonymize, locked: false } satisfies PlayerState];
-        }),
-      );
-    });
+      }),
+    );
   }, [
     inspection,
     options.excludeSteamIds,
@@ -276,47 +254,6 @@ export function useReplayAnonymizer() {
     setStatus("Options restored to defaults.");
   }, []);
 
-  const importOptionsJson = useCallback(() => {
-    optionsInputRef.current?.click();
-  }, []);
-
-  const handleOptionsJsonChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const nextFile = event.target.files?.[0] ?? null;
-      event.target.value = "";
-
-      if (!nextFile) {
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(await nextFile.text()) as Partial<AnonymizeOptions>;
-
-        if (Array.isArray(parsed.players) && parsed.players.length > 0) {
-          importedPlayersRef.current = new Map(
-            parsed.players.flatMap((player) => {
-              const entries: [string, boolean][] = [];
-              const anonymize = Boolean(player.anonymize);
-
-              if (player.player_id != null) {
-                entries.push([`player:${player.player_id}`, anonymize]);
-              }
-
-              entries.push([`steam:${player.steam_id}`, anonymize]);
-              return entries;
-            }),
-          );
-        }
-
-        setOptions((current) => uiOptionsFromJson(parsed, current));
-        setStatus("Options JSON imported.");
-      } catch (error) {
-        setStatus(error instanceof Error ? error.message : String(error));
-      }
-    },
-    [],
-  );
-
   const readOptions = useCallback((): AnonymizeOptions | null => {
     if (!inspection) {
       return null;
@@ -394,7 +331,6 @@ export function useReplayAnonymizer() {
     heroesById,
     inspection,
     options,
-    optionsInputRef,
     outputFileName,
     playerProfiles,
     playerState,
@@ -405,8 +341,6 @@ export function useReplayAnonymizer() {
     handleDragOver,
     handleDrop,
     handleFileChange,
-    handleOptionsJsonChange,
-    importOptionsJson,
     runFullScan,
     setActiveTab,
     setOutputFileName,

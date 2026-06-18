@@ -12,7 +12,6 @@ type ControlPanelProps = {
   file: File | null;
   fileInputRef: RefObject<HTMLInputElement>;
   inspection: ReplayInspection | null;
-  optionsInputRef: RefObject<HTMLInputElement>;
   outputFileName: string;
   status: string;
   onActiveTabChange: (tab: ReviewTab) => void;
@@ -22,8 +21,6 @@ type ControlPanelProps = {
   onDrop: (event: DragEvent<HTMLLabelElement>) => void;
   onExportOptionsJson: () => void;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onImportOptionsJson: () => void;
-  onOptionsJsonChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onOutputFileNameChange: (name: string) => void;
   onRestoreDefaultOptions: () => void;
   onRunFullScan: () => void;
@@ -37,7 +34,6 @@ export function ControlPanel({
   file,
   fileInputRef,
   inspection,
-  optionsInputRef,
   outputFileName,
   status,
   onActiveTabChange,
@@ -47,8 +43,6 @@ export function ControlPanel({
   onDrop,
   onExportOptionsJson,
   onFileChange,
-  onImportOptionsJson,
-  onOptionsJsonChange,
   onOutputFileNameChange,
   onRestoreDefaultOptions,
   onRunFullScan,
@@ -72,11 +66,8 @@ export function ControlPanel({
       <OptionsControls
         activeTab={activeTab}
         inspection={inspection}
-        optionsInputRef={optionsInputRef}
         onActiveTabChange={onActiveTabChange}
         onExportOptionsJson={onExportOptionsJson}
-        onImportOptionsJson={onImportOptionsJson}
-        onOptionsJsonChange={onOptionsJsonChange}
         onRestoreDefaultOptions={onRestoreDefaultOptions}
       />
 
