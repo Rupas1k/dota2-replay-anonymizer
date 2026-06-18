@@ -53,6 +53,7 @@ const numberValue = (value: unknown) => {
 const trySetStoredValue = (key: string, value: unknown) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+
     return true;
   } catch {
     return false;
@@ -61,6 +62,7 @@ const trySetStoredValue = (key: string, value: unknown) => {
 
 function normalizeProPlayer(player: OpenDotaProPlayerResponse): PlayerProfileLookup | null {
   const accountId = numberValue(player.account_id);
+
   if (!accountId) {
     return null;
   }
@@ -101,6 +103,7 @@ function profileFromStored(value: unknown): PlayerProfileLookup | null {
 
   const profile = value as Partial<Record<keyof PlayerProfileLookup, unknown>>;
   const accountId = numberValue(profile.accountId);
+
   if (!accountId) {
     return null;
   }
@@ -146,11 +149,13 @@ function mapFromHeroes(heroes: HeroLookup[]) {
 function loadStoredProPlayerMap() {
   try {
     const stored = localStorage.getItem(proPlayerStorageKey);
+
     if (!stored) {
       return null;
     }
 
     const parsed = JSON.parse(stored) as Partial<StoredProPlayers>;
+
     if (
       typeof parsed.cachedAt !== "number" ||
       Date.now() - parsed.cachedAt > proPlayerStorageMaxAgeMs ||
@@ -172,11 +177,13 @@ function loadStoredProPlayerMap() {
 function loadStoredHeroMap() {
   try {
     const stored = localStorage.getItem(heroStorageKey);
+
     if (!stored) {
       return null;
     }
 
     const parsed = JSON.parse(stored) as Partial<StoredHeroes>;
+
     if (
       typeof parsed.cachedAt !== "number" ||
       Date.now() - parsed.cachedAt > heroStorageMaxAgeMs ||
@@ -211,21 +218,21 @@ function saveStoredHeroMap(heroes: Map<number, HeroLookup>) {
 
 async function fetchProPlayerMap() {
   const url = new URL("https://api.opendota.com/api/proPlayers");
-
   const response = await fetch(url);
+
   if (!response.ok) {
     return new Map<number, PlayerProfileLookup>();
   }
 
   const data = (await response.json()) as OpenDotaProPlayerResponse[];
   const proPlayers = Array.isArray(data) ? data : [];
-
   const proPlayerMap = new Map(
     proPlayers
       .map(normalizeProPlayer)
       .filter((player): player is PlayerProfileLookup => player !== null)
       .map((player) => [player.accountId, player]),
   );
+
   saveStoredProPlayerMap(proPlayerMap);
 
   return proPlayerMap;
@@ -233,20 +240,22 @@ async function fetchProPlayerMap() {
 
 async function fetchHeroMap() {
   const url = new URL("https://api.opendota.com/api/heroes");
-
   const response = await fetch(url);
+
   if (!response.ok) {
     return new Map<number, HeroLookup>();
   }
 
   const data = (await response.json()) as OpenDotaHeroResponse[];
   const apiHeroes = Array.isArray(data) ? data : [];
+
   const heroes = new Map(
     apiHeroes
       .map(normalizeHero)
       .filter((hero): hero is HeroLookup => hero !== null)
       .map((hero) => [hero.id, hero]),
   );
+
   saveStoredHeroMap(heroes);
 
   return heroes;
@@ -260,13 +269,16 @@ export function fetchOpenDotaProPlayerMap() {
   const stored = loadStoredProPlayerMap();
   if (stored) {
     proPlayerCache = Promise.resolve(stored);
+
     return proPlayerCache;
   }
 
   proPlayerCache = fetchProPlayerMap().catch(() => {
     proPlayerCache = null;
+
     return new Map<number, PlayerProfileLookup>();
   });
+
   return proPlayerCache;
 }
 
@@ -278,13 +290,16 @@ export function fetchOpenDotaHeroMap() {
   const stored = loadStoredHeroMap();
   if (stored) {
     heroCache = Promise.resolve(stored);
+
     return heroCache;
   }
 
   heroCache = fetchHeroMap().catch(() => {
     heroCache = null;
+
     return new Map<number, HeroLookup>();
   });
+
   return heroCache;
 }
 
@@ -301,6 +316,7 @@ export async function findOpenDotaProProfiles(
     }
 
     const profile = proPlayers.get(accountId);
+
     if (profile) {
       profiles.push([steamIdText(player.steam_id), profile]);
     }
@@ -321,6 +337,7 @@ export async function findOpenDotaHeroes(
     }
 
     const hero = heroes.get(player.hero_id);
+
     if (hero) {
       heroEntries.push([player.hero_id, hero]);
     }

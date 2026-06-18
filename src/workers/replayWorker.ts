@@ -44,8 +44,13 @@ const postSuccess = <Type extends WorkerRequestType>(
   });
 };
 
-const readInspection = (buffer: ArrayBuffer, mode: "quick" | "full"): ReplayInspection => {
+const loadReplay = (buffer: ArrayBuffer) => {
   load_replay_bytes(new Uint8Array(buffer));
+  replayLoaded = true;
+};
+
+const readInspection = (buffer: ArrayBuffer, mode: "quick" | "full"): ReplayInspection => {
+  loadReplay(buffer);
 
   const inspection =
     mode === "full"
@@ -59,53 +64,74 @@ const readInspection = (buffer: ArrayBuffer, mode: "quick" | "full"): ReplayInsp
   return inspection;
 };
 
+const handleInspect = (id: number, payload: WorkerRequest<"inspect">["payload"]) => {
+  replayLoaded = false;
+  clear_replay();
+
+  try {
+    const inspection = readInspection(payload.buffer, payload.mode ?? "quick");
+    postSuccess(id, "inspect", { inspection });
+  } finally {
+    detachBuffer(payload.buffer);
+  }
+};
+
+const ensureReplayLoaded = (payload: WorkerRequest<"anonymize">["payload"]) => {
+  if (replayLoaded || !payload.buffer) {
+    return;
+  }
+
+  try {
+    loadReplay(payload.buffer);
+  } finally {
+    detachBuffer(payload.buffer);
+  }
+};
+
+const anonymizeLoadedReplay = (options: WorkerRequest<"anonymize">["payload"]["options"]) => {
+  const output = anonymize_loaded_replay(JSON.stringify(options));
+
+  return new Blob([output], {
+    type: "application/octet-stream",
+  });
+};
+
+const handleAnonymize = (id: number, payload: WorkerRequest<"anonymize">["payload"]) => {
+  ensureReplayLoaded(payload);
+
+  if (!replayLoaded) {
+    throw new Error("No replay loaded.");
+  }
+
+  let releasedOutput = false;
+
+  try {
+    const blob = anonymizeLoadedReplay(payload.options);
+
+    release_anonymized_replay();
+    releasedOutput = true;
+
+    clear_replay();
+    replayLoaded = false;
+
+    postSuccess(id, "anonymize", { blob });
+  } finally {
+    if (!releasedOutput) {
+      release_anonymized_replay();
+    }
+  }
+};
+
 const handleMessage = ({ id, type, payload }: WorkerRequest) => {
   try {
     switch (type) {
       case "inspect": {
-        replayLoaded = false;
-        clear_replay();
-        try {
-          const inspection = readInspection(payload.buffer, payload.mode ?? "quick");
-          replayLoaded = true;
-          postSuccess(id, type, { inspection });
-        } finally {
-          detachBuffer(payload.buffer);
-        }
+        handleInspect(id, payload);
         return;
       }
 
       case "anonymize": {
-        if (!replayLoaded && payload.buffer) {
-          try {
-            load_replay_bytes(new Uint8Array(payload.buffer));
-            replayLoaded = true;
-          } finally {
-            detachBuffer(payload.buffer);
-          }
-        }
-
-        if (!replayLoaded) {
-          throw new Error("No replay loaded.");
-        }
-
-        let releasedOutput = false;
-
-        try {
-          const output = anonymize_loaded_replay(JSON.stringify(payload.options));
-          const blob = new Blob([output], {
-            type: "application/octet-stream",
-          });
-          release_anonymized_replay();
-          releasedOutput = true;
-          clear_replay();
-          replayLoaded = false;
-          postSuccess(id, type, { blob });
-        } finally {
-          if (!releasedOutput) {
-            release_anonymized_replay();
-          }
-        }
+        handleAnonymize(id, payload);
         return;
       }
 
