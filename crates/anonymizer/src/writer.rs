@@ -468,22 +468,6 @@ impl ReplayAnonymizer {
 
     #[rewrite_field(
         class = "CDOTA_PlayerResource",
-        field = ends_with("m_iRankTier"),
-    )]
-    fn player_resource_rank_tier(&mut self, field_name: &str, value: i32) -> Option<i32> {
-        if !self.rules.remove_rank_tier() {
-            return None;
-        }
-
-        if !self.should_anonymize_player_resource_field(field_name) {
-            return None;
-        }
-
-        self.zero(value)
-    }
-
-    #[rewrite_field(
-        class = "CDOTA_PlayerResource",
         field = ends_with("m_bIsPlusSubscriber"),
     )]
     fn player_resource_plus_subscriber(&mut self, field_name: &str, value: bool) -> Option<bool> {
@@ -851,7 +835,7 @@ impl ReplayAnonymizer {
         msg: CUserMsgParticleManager,
     ) -> Result<MessageRewrite, ParserError> {
         if !self.rules.remove_dota_plus_badges() {
-            return Ok(MessageRewrite::Keep)
+            return Ok(MessageRewrite::Keep);
         }
 
         if self.particles_seen >= PARTICLES_TO_DROP || !is_particle_to_remove(&msg) {

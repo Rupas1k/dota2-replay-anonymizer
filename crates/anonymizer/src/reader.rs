@@ -210,7 +210,7 @@ fn quick_scan_context(
                     input_bytes,
                     playback_ticks,
                     players,
-                })
+                });
             }
 
             entries.push(PlayerEntry {
