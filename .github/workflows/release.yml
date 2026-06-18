@@ -1,0 +1,112 @@
+name: Build CLI Releases
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, for example v0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x86_64
+            binary: d2ra
+            archive: tar.gz
+          - os: windows-latest
+            platform: windows-x86_64
+            binary: d2ra.exe
+            archive: zip
+          - os: macos-13
+            platform: macos-x86_64
+            binary: d2ra
+            archive: tar.gz
+          - os: macos-14
+            platform: macos-aarch64
+            binary: d2ra
+            archive: tar.gz
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-release-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build CLI
+        run: cargo build --release -p d2-replay-anonymizer-cli
+
+      - name: Package archive
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${INPUT_VERSION}" ]; then
+            VERSION="${INPUT_VERSION#v}"
+          elif [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="$(awk -F '"' '/^version = / { print $2; exit }' crates/cli/Cargo.toml)"
+          fi
+
+          PACKAGE="dota2-replay-anonymizer-${VERSION}-${{ matrix.platform }}"
+          RELEASE_DIR="dist/releases/${PACKAGE}"
+
+          mkdir -p "${RELEASE_DIR}"
+          cp "target/release/${{ matrix.binary }}" "${RELEASE_DIR}/"
+
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            (cd dist/releases && 7z a "${PACKAGE}.zip" "${PACKAGE}")
+            ASSET="dist/releases/${PACKAGE}.zip"
+          else
+            tar -czf "dist/releases/${PACKAGE}.tar.gz" -C dist/releases "${PACKAGE}"
+            ASSET="dist/releases/${PACKAGE}.tar.gz"
+          fi
+
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "${ASSET}" > "${ASSET}.sha256"
+          else
+            shasum -a 256 "${ASSET}" > "${ASSET}.sha256"
+          fi
+
+      - name: Upload tar.gz release assets
+        if: matrix.archive == 'tar.gz'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          files: |
+            dist/releases/*.tar.gz
+            dist/releases/*.tar.gz.sha256
+
+      - name: Upload zip release assets
+        if: matrix.archive == 'zip'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          files: |
+            dist/releases/*.zip
+            dist/releases/*.sha256
