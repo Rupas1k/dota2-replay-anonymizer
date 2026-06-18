@@ -25,6 +25,24 @@ export function PlayerRulesPanel({ options, onOptionsChange }: PlayerRulesPanelP
     onOptionsChange({ spectatorAnonymizeMode: mode });
   };
 
+  const setIncludeSteamIds = (includeSteamIds: string[]) => {
+    const includeSet = new Set(includeSteamIds);
+
+    onOptionsChange({
+      includeSteamIds,
+      excludeSteamIds: options.excludeSteamIds.filter((steamId) => !includeSet.has(steamId)),
+    });
+  };
+
+  const setExcludeSteamIds = (excludeSteamIds: string[]) => {
+    const excludeSet = new Set(excludeSteamIds);
+
+    onOptionsChange({
+      excludeSteamIds,
+      includeSteamIds: options.includeSteamIds.filter((steamId) => !excludeSet.has(steamId)),
+    });
+  };
+
   return (
     <div className="player-rule-panel">
       <div className="player-rule-row">
@@ -112,15 +130,13 @@ export function PlayerRulesPanel({ options, onOptionsChange }: PlayerRulesPanelP
         <div className="steam-id-rule-grid">
           <SteamIdListInput
             label="Always anonymize players"
-            placeholder={"76561198000000000\n76561198000000001"}
             values={options.includeSteamIds}
-            onChange={(includeSteamIds) => onOptionsChange({ includeSteamIds })}
+            onChange={setIncludeSteamIds}
           />
           <SteamIdListInput
             label="Never anonymize players"
-            placeholder={"76561198000000000\n76561198000000001"}
             values={options.excludeSteamIds}
-            onChange={(excludeSteamIds) => onOptionsChange({ excludeSteamIds })}
+            onChange={setExcludeSteamIds}
           />
         </div>
       </div>

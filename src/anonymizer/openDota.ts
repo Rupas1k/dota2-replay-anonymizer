@@ -196,9 +196,7 @@ function saveStoredProPlayerMap(proPlayers: Map<number, PlayerProfileLookup>) {
         players,
       } satisfies StoredProPlayers),
     );
-  } catch {
-    // Ignore storage failures; the in-memory cache still avoids repeated calls in this session.
-  }
+  } catch {}
 }
 
 function saveStoredHeroMap(heroes: Map<number, HeroLookup>) {
@@ -210,9 +208,7 @@ function saveStoredHeroMap(heroes: Map<number, HeroLookup>) {
         heroes: Array.from(heroes.values()),
       } satisfies StoredHeroes),
     );
-  } catch {
-    // Ignore storage failures; the in-memory cache still avoids repeated calls in this session.
-  }
+  } catch {}
 }
 
 async function fetchProPlayerMap() {

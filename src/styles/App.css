@@ -476,23 +476,31 @@ textarea {
 }
 
 .steam-id-list-field {
-  display: grid;
-  align-content: start;
-  gap: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-width: 0;
-  padding-top: 2px;
+  padding: 12px;
+  border: 1px solid rgba(55, 73, 87, 0.44);
+  border-radius: var(--radius);
+  background: #0f161d;
+
+  &.is-editing {
+    gap: 10px;
+  }
 }
 
 .steam-id-list-head {
   display: flex;
   gap: 8px;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
 
   div {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    align-items: baseline;
+    align-items: flex-start;
     min-width: 0;
   }
 
@@ -505,7 +513,7 @@ textarea {
 
   strong {
     color: var(--muted-strong);
-    font-size: 0.86rem;
+    font-size: 0.88rem;
   }
 
   span {
@@ -534,33 +542,43 @@ textarea {
   overflow: hidden;
   margin: 0;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .steam-id-editor {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  padding-top: 2px;
 
   textarea {
-    min-height: 132px;
+    min-height: 160px;
     resize: vertical;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.82rem;
   }
-
-  small {
-    color: var(--muted);
-    font-size: 0.78rem;
-  }
 }
 
+.steam-id-editor-summary,
 .steam-id-editor-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+}
+
+.steam-id-editor-summary {
+  color: var(--muted);
+  font-size: 0.78rem;
+
+  span:not(:first-child) {
+    color: var(--warning);
+  }
+}
+
+.steam-id-editor-actions {
   justify-content: flex-start;
 
   button {

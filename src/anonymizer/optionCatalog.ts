@@ -20,7 +20,7 @@ export type OptionGroup = {
 
 export const optionGroups: OptionGroup[] = [
   {
-    title: "Player Specific",
+    title: "Selected Players",
     sections: [
       {
         title: "Identity",
@@ -163,7 +163,7 @@ export const optionGroups: OptionGroup[] = [
           {
             key: "removeLobbyName",
             title: "Lobby name",
-            description: "Clear custom lobby names.",
+            description: "Clear custom lobby name.",
             inactiveDescription: "Keep lobby names.",
           },
           {
@@ -171,12 +171,6 @@ export const optionGroups: OptionGroup[] = [
             title: "League info",
             description: "Clear league IDs from the replay.",
             inactiveDescription: "Keep league IDs.",
-          },
-          {
-            key: "removeBroadcasterInfo",
-            title: "Broadcaster info",
-            description: "Clear broadcaster channels and voice data.",
-            inactiveDescription: "Keep broadcaster info.",
           },
         ],
       },
@@ -217,6 +211,12 @@ export const optionGroups: OptionGroup[] = [
             title: "Combat log",
             description: "Remove combat log messages.",
             inactiveDescription: "Keep combat log data.",
+          },
+          {
+            key: "removeBroadcasterInfo",
+            title: "Broadcaster info",
+            description: "Clear broadcaster channels and voice data.",
+            inactiveDescription: "Keep broadcaster info.",
           },
         ],
       },

@@ -29,7 +29,7 @@ export function SaveControls({
         <input
           type="text"
           value={outputFileName}
-          placeholder="name.anon.dem"
+          placeholder="name_anon.dem"
           disabled={!file || busy}
           onChange={(event) => onOutputFileNameChange(event.target.value)}
         />
@@ -40,7 +40,7 @@ export function SaveControls({
         disabled={!canAnonymize}
         onClick={onDownload}
       >
-        Download anonymized replay
+        Download replay
       </button>
     </section>
   );

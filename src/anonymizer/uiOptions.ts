@@ -103,7 +103,5 @@ export const loadUiOptions = (): UiOptions => {
 export const saveUiOptions = (options: UiOptions) => {
   try {
     localStorage.setItem(uiOptionsStorageKey, JSON.stringify(options));
-  } catch {
-    // Ignore storage failures; the current session can still use in-memory options.
-  }
+  } catch {}
 };

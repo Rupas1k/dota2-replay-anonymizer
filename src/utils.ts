@@ -12,7 +12,7 @@ export const formatBytes = (bytes: number) => {
 
 export const replayBaseName = (fileName: string) => fileName.replace(/\.dem$/i, "");
 
-export const anonymizedReplayName = (fileName: string) => `${replayBaseName(fileName)}.anon.dem`;
+export const anonymizedReplayName = (fileName: string) => `${replayBaseName(fileName)}_anon.dem`;
 
 export const optionsJsonName = (fileName?: string) =>
   `${fileName ? replayBaseName(fileName) : "d2-anonymizer-options"}.options.json`;
