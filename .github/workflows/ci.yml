@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -51,7 +52,7 @@ jobs:
           fi
 
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
 
       - name: Generate WASM bindings
         run: npm run build:wasm
