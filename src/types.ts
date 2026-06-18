@@ -151,7 +151,7 @@ export type UiOptions = {
   removeStatueCosmetics: boolean;
   removeCameraMovements: boolean;
   removeMouseMovements: boolean;
-  removeClickMovements: boolean;
+  removeClicks: boolean;
   removeBroadcasterInfo: boolean;
   playerSelectionMode: PlayerSelectionMode;
   proAnonymizeMode: ProAnonymizeMode;

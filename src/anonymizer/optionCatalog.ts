@@ -110,8 +110,8 @@ export const optionGroups: OptionGroup[] = [
             inactiveDescription: "Keep mouse traces.",
           },
           {
-            key: "removeClickMovements",
-            title: "Click movements",
+            key: "removeClicks",
+            title: "Clicks",
             description: "Remove selection and click traces.",
             inactiveDescription: "Keep click traces.",
           },
