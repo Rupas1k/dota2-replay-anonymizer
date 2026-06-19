@@ -1,8 +1,8 @@
 # Dota 2 Replay Anonymizer
 
-Dota 2 Replay Anonymizer is a local rewriter for Dota 2 replay files (`.dem`). It removes selected player, match, team, and replay details while keeping the file in replay format. Use it as a Rust library, through the command-line tool, or in the browser app.
+Dota 2 Replay Anonymizer removes selected data from Dota 2 replay files (`.dem`) and saves a playable anonymized replay.
 
-Processing is local. The CLI works with files on disk, and the browser app runs the Rust anonymizer through WebAssembly without uploading the replay.
+All processing runs locally. Use the browser app to review and export replays, or use the CLI/Rust library.
 
 ## What It Can Remove
 
