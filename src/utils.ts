@@ -14,8 +14,7 @@ export const replayBaseName = (fileName: string) => fileName.replace(/\.dem$/i, 
 
 export const anonymizedReplayName = (fileName: string) => `${replayBaseName(fileName)}_anon.dem`;
 
-export const optionsJsonName = (fileName?: string) =>
-  `${fileName ? replayBaseName(fileName) : "d2-anonymizer-options"}.options.json`;
+export const optionsJsonName = () => "options.json";
 
 export const downloadBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);

@@ -310,9 +310,9 @@ export function useReplayAnonymizer() {
       type: "application/json",
     });
 
-    downloadBlob(blob, optionsJsonName(file?.name));
+    downloadBlob(blob, optionsJsonName());
     setStatus("Options JSON exported.");
-  }, [file, options]);
+  }, [options]);
 
   return {
     activeTab,
