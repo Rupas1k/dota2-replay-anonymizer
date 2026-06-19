@@ -70,7 +70,7 @@ export type AnonymizeOptions = {
 };
 
 export type WorkerRequestPayloads = {
-  inspect: {
+  scan: {
     buffer: ArrayBuffer;
     mode?: "quick" | "full";
   };
@@ -81,7 +81,7 @@ export type WorkerRequestPayloads = {
 };
 
 export type WorkerResponsePayloads = {
-  inspect: {
+  scan: {
     inspection: ReplayInspection;
   };
   anonymize: {

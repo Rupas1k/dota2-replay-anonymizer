@@ -9,19 +9,26 @@ pub use reader::ReplayRead;
 use source2_demo::prelude::ParserError;
 use std::io::{Read, Seek, Write};
 
-pub fn inspect(input: &[u8]) -> Result<ReplayRead, ParserError> {
-    reader::inspect(input)
+pub fn full_scan_bytes(input: &[u8]) -> Result<ReplayRead, ParserError> {
+    reader::full_scan_bytes(input)
 }
 
-pub fn scan(input: &[u8]) -> Result<ReplayRead, ParserError> {
-    reader::scan(input)
-}
-
-pub fn scan_reader<R>(input: R) -> Result<ReplayRead, ParserError>
+pub fn full_scan<R>(input: R) -> Result<ReplayRead, ParserError>
 where
     R: Read + Seek,
 {
-    reader::scan_reader(input)
+    reader::full_scan(input)
+}
+
+pub fn scan_bytes(input: &[u8]) -> Result<ReplayRead, ParserError> {
+    reader::scan_bytes(input)
+}
+
+pub fn scan<R>(input: R) -> Result<ReplayRead, ParserError>
+where
+    R: Read + Seek,
+{
+    reader::scan(input)
 }
 
 pub fn anonymize_bytes<O>(input: &[u8], options: O) -> Result<Vec<u8>, ParserError>

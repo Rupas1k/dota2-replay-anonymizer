@@ -123,7 +123,7 @@ impl ReplayReader {
     }
 }
 
-pub fn inspect(input: &[u8]) -> Result<ReplayRead, ParserError> {
+pub fn full_scan_bytes(input: &[u8]) -> Result<ReplayRead, ParserError> {
     let mut parser = Parser::from_slice(input)?;
     let playback_ticks = parser.replay_info().playback_ticks();
     let reader = parser.register_observer::<ReplayReader>();
@@ -141,6 +141,27 @@ pub fn inspect(input: &[u8]) -> Result<ReplayRead, ParserError> {
     })
 }
 
+pub fn full_scan<R>(input: R) -> Result<ReplayRead, ParserError>
+where
+    R: Read + Seek,
+{
+    let mut parser = Parser::from_reader(input)?;
+    let playback_ticks = parser.replay_info().playback_ticks();
+    let reader = parser.register_observer::<ReplayReader>();
+
+    parser.run_to_end()?;
+
+    let mut players = reader.borrow().players.clone();
+
+    players.sort_by_key(|player| player.player_id);
+
+    Ok(ReplayRead {
+        input_bytes: 0,
+        playback_ticks,
+        players,
+    })
+}
+
 #[derive(Default)]
 struct EnableEntities {}
 
@@ -148,7 +169,7 @@ struct EnableEntities {}
 #[uses_entities]
 impl EnableEntities {}
 
-pub fn scan(input: &[u8]) -> Result<ReplayRead, ParserError> {
+pub fn scan_bytes(input: &[u8]) -> Result<ReplayRead, ParserError> {
     let mut parser = Parser::from_slice(input)?;
     let playback_ticks = parser.replay_info().playback_ticks();
 
@@ -158,7 +179,7 @@ pub fn scan(input: &[u8]) -> Result<ReplayRead, ParserError> {
     quick_scan_context(parser.context(), input.len(), playback_ticks)
 }
 
-pub fn scan_reader<R>(input: R) -> Result<ReplayRead, ParserError>
+pub fn scan<R>(input: R) -> Result<ReplayRead, ParserError>
 where
     R: Read + Seek,
 {

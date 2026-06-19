@@ -17,7 +17,7 @@ Processing is local. The CLI works with files on disk, and the browser app runs 
 
 ## Interfaces
 
-- Rust library for replay inspection and rewriting.
+- Rust library for replay scanning and rewriting.
 - `d2ra` CLI for single files or batches.
 - Browser app for reviewing players and options before downloading the anonymized replay.
 
@@ -158,7 +158,7 @@ Reusable CLI/browser options:
 }
 ```
 
-In the CLI and browser app, player selection is resolved after the replay has been inspected:
+In the CLI and browser app, player selection is resolved after the replay has been scanned:
 
 - `player_selection_mode: "include_all"` anonymizes detected players by default.
 - `player_selection_mode: "exclude_all"` keeps detected players by default.
@@ -205,10 +205,10 @@ Inspect replay metadata:
 use std::fs::File;
 use std::io::BufReader;
 
-use d2_replay_anonymizer::scan_reader;
+use d2_replay_anonymizer::scan;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let replay = scan_reader(BufReader::new(File::open("input.dem")?))?;
+    let replay = scan(BufReader::new(File::open("input.dem")?))?;
 
     println!("playback ticks: {}", replay.playback_ticks);
 
@@ -226,9 +226,7 @@ Use metadata to build per-player rewrite rules:
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-use d2_replay_anonymizer::{
-    anonymize, scan_reader, AnonymizeOptions, PlayerOption,
-};
+use d2_replay_anonymizer::{anonymize, scan, AnonymizeOptions, PlayerOption};
 
 const STEAM_IDS_TO_KEEP: &[u64] = &[
     76561198000000000,
@@ -240,7 +238,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input_path = "input.dem";
     let output_path = "output.dem";
 
-    let replay = scan_reader(BufReader::new(File::open(input_path)?))?;
+    let replay = scan(BufReader::new(File::open(input_path)?))?;
 
     let player_rules = replay
         .players
@@ -268,15 +266,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 The library exports:
 
-- `inspect` and `scan` for byte slices.
-- `scan_reader` for seekable readers.
+- `full_scan_bytes` and `scan_bytes` for byte slices.
+- `full_scan` and `scan` for seekable readers.
 - `anonymize_bytes` for in-memory rewriting.
 - `anonymize` for seekable input and output streams.
 - `AnonymizeOptions`, `AnonymizeRules`, `PlayerOption`, `PlayerSelectionMode`, `ReplayPlayer`, and `ReplayRead`.
 
 Custom callers can implement `AnonymizeRules` instead of using `AnonymizeOptions` directly.
 
-`AnonymizeOptions::players` is for Rust callers that already have replay metadata and want explicit per-player decisions. Values should come from `scan_reader` or `inspect` for the same replay. Replay player IDs are not portable across arbitrary replays.
+`AnonymizeOptions::players` is for Rust callers that already have replay metadata and want explicit per-player decisions. Values should come from `scan` or `full_scan` for the same replay. Replay player IDs are not portable across arbitrary replays.
 
 ## GitHub Pages
 
@@ -294,7 +292,7 @@ If the repository or Pages path changes, update the `base` value in `vite.config
 
 | Path                | Purpose                                                                  |
 | ------------------- | ------------------------------------------------------------------------ |
-| `crates/anonymizer` | Core Rust library for reading, inspecting, and rewriting replay bytes.   |
+| `crates/anonymizer` | Core Rust library for reading, scanning, and rewriting replay bytes.     |
 | `crates/cli`        | `d2ra` CLI wrapper around the library.                                   |
 | `crates/wasm`       | `wasm-bindgen` bindings used by the browser app.                         |
 | `src`               | React + Vite browser app and replay worker.                              |

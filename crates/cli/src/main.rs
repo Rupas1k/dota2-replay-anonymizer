@@ -9,9 +9,7 @@ use std::{
 };
 
 use anyhow::{anyhow, bail, Context, Result};
-use d2_replay_anonymizer::{
-    anonymize, scan_reader, AnonymizeOptions, PlayerOption, PlayerSelectionMode,
-};
+use d2_replay_anonymizer::{anonymize, scan, AnonymizeOptions, PlayerOption, PlayerSelectionMode};
 
 const SOURCE_TV_STEAM_ID_THRESHOLD: u64 = 90000000000000000;
 
@@ -211,10 +209,11 @@ fn add_steam_id_overrides(input: &Path, options: &mut AnonymizeOptions) -> Resul
         return Ok(());
     }
 
-    let replay = scan_reader(BufReader::new(
-        File::open(input).with_context(|| format!("failed to open {}", input.display()))?,
-    ))
-    .with_context(|| format!("failed to inspect {}", input.display()))?;
+    let replay =
+        scan(BufReader::new(File::open(input).with_context(|| {
+            format!("failed to open {}", input.display())
+        })?))
+        .with_context(|| format!("failed to scan {}", input.display()))?;
     let players = replay
         .players
         .into_iter()

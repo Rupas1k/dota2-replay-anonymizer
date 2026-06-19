@@ -28,7 +28,7 @@ const errorMessage = (error: unknown) => (error instanceof Error ? error.message
 const inspectionStatus = (mode: ReplayScanMode) =>
   mode === "full"
     ? "Full scan finished. Review the updated player list."
-    : "Replay inspected. Review the anonymization settings.";
+    : "Replay scanned. Review the anonymization settings.";
 
 const buildInitialPlayerState = (inspection: ReplayInspection, options: UiOptions) =>
   buildPlayerState({
@@ -60,7 +60,7 @@ export function useReplayAnonymizer() {
     }
 
     if (workerReady && !file && !busy) {
-      setStatus("Ready. Choose a replay to inspect.");
+      setStatus("Ready. Choose a replay to scan.");
     }
   }, [busy, file, workerError, workerReady]);
 
@@ -130,14 +130,12 @@ export function useReplayAnonymizer() {
 
   const canAnonymize = workerReady && !busy && Boolean(file && inspection);
 
-  const inspectLoadedFile = useCallback(
+  const scanLoadedFile = useCallback(
     async (nextFile: File, mode: ReplayScanMode) => {
-      setStatus(mode === "full" ? "Running full replay scan..." : "Inspecting replay...");
+      setStatus(mode === "full" ? "Running full replay scan..." : "Scanning replay...");
 
       const buffer = await nextFile.arrayBuffer();
-      const { inspection: nextInspection } = await workerCall("inspect", { buffer, mode }, [
-        buffer,
-      ]);
+      const { inspection: nextInspection } = await workerCall("scan", { buffer, mode }, [buffer]);
       const nextPlayerState = buildInitialPlayerState(nextInspection, options);
 
       setInspection(nextInspection);
@@ -150,7 +148,7 @@ export function useReplayAnonymizer() {
     [options, workerCall],
   );
 
-  const inspectFile = useCallback(
+  const scanFile = useCallback(
     async (nextFile: File | null) => {
       setFile(nextFile);
       setOutputFileName(nextFile ? anonymizedReplayName(nextFile.name) : "");
@@ -158,13 +156,13 @@ export function useReplayAnonymizer() {
       setBusy(true);
 
       if (!nextFile) {
-        setStatus(workerReady ? "Ready. Choose a replay to inspect." : "Loading WASM...");
+        setStatus(workerReady ? "Ready. Choose a replay to scan." : "Loading WASM...");
         setBusy(false);
         return;
       }
 
       try {
-        await inspectLoadedFile(nextFile, "quick");
+        await scanLoadedFile(nextFile, "quick");
       } catch (error) {
         resetInspection();
         setStatus(errorMessage(error));
@@ -172,7 +170,7 @@ export function useReplayAnonymizer() {
         setBusy(false);
       }
     },
-    [inspectLoadedFile, resetInspection, workerReady],
+    [resetInspection, scanLoadedFile, workerReady],
   );
 
   const runFullScan = useCallback(async () => {
@@ -183,21 +181,21 @@ export function useReplayAnonymizer() {
     setBusy(true);
 
     try {
-      await inspectLoadedFile(file, "full");
+      await scanLoadedFile(file, "full");
     } catch (error) {
       setStatus(errorMessage(error));
     } finally {
       setBusy(false);
     }
-  }, [busy, file, inspectLoadedFile]);
+  }, [busy, file, scanLoadedFile]);
 
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const nextFile = event.target.files?.[0] ?? null;
       event.target.value = "";
-      void inspectFile(nextFile);
+      void scanFile(nextFile);
     },
-    [inspectFile],
+    [scanFile],
   );
 
   const handleDragOver = useCallback((event: DragEvent<HTMLLabelElement>) => {
@@ -217,9 +215,9 @@ export function useReplayAnonymizer() {
         fileInputRef.current.files = transfer.files;
       }
 
-      void inspectFile(nextFile);
+      void scanFile(nextFile);
     },
-    [inspectFile],
+    [scanFile],
   );
 
   const updatePlayer = useCallback((key: string, patch: Partial<PlayerState>) => {
@@ -264,7 +262,7 @@ export function useReplayAnonymizer() {
 
   const anonymizeReplay = useCallback(async () => {
     if (!file || !inspection) {
-      setStatus("Choose and inspect a replay first.");
+      setStatus("Choose and scan a replay first.");
       return;
     }
 

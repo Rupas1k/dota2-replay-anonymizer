@@ -1,7 +1,7 @@
 import init, {
   anonymize_loaded_replay,
   clear_replay,
-  inspect_loaded_replay,
+  full_scan_loaded_replay,
   load_replay_bytes,
   quick_scan_loaded_replay,
   release_anonymized_replay,
@@ -54,23 +54,23 @@ const readInspection = (buffer: ArrayBuffer, mode: "quick" | "full"): ReplayInsp
 
   const inspection =
     mode === "full"
-      ? (inspect_loaded_replay() as ReplayInspection)
+      ? (full_scan_loaded_replay() as ReplayInspection)
       : (quick_scan_loaded_replay() as ReplayInspection);
 
   if (!inspection || !Array.isArray(inspection.players)) {
-    throw new Error("Replay inspection did not return players.");
+    throw new Error("Replay scan did not return players.");
   }
 
   return inspection;
 };
 
-const handleInspect = (id: number, payload: WorkerRequest<"inspect">["payload"]) => {
+const handleScan = (id: number, payload: WorkerRequest<"scan">["payload"]) => {
   replayLoaded = false;
   clear_replay();
 
   try {
     const inspection = readInspection(payload.buffer, payload.mode ?? "quick");
-    postSuccess(id, "inspect", { inspection });
+    postSuccess(id, "scan", { inspection });
   } finally {
     detachBuffer(payload.buffer);
   }
@@ -125,8 +125,8 @@ const handleAnonymize = (id: number, payload: WorkerRequest<"anonymize">["payloa
 const handleMessage = ({ id, type, payload }: WorkerRequest) => {
   try {
     switch (type) {
-      case "inspect": {
-        handleInspect(id, payload);
+      case "scan": {
+        handleScan(id, payload);
         return;
       }
 

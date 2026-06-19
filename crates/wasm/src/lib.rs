@@ -57,13 +57,13 @@ fn inspection_to_js(replay: ReplayRead) -> Result<JsValue, JsValue> {
     Ok(value.into())
 }
 
-fn inspect_replay(input: &[u8]) -> Result<JsValue, JsValue> {
-    let replay = d2_replay_anonymizer::inspect(input).map_err(js_error)?;
+fn full_scan_replay(input: &[u8]) -> Result<JsValue, JsValue> {
+    let replay = d2_replay_anonymizer::full_scan_bytes(input).map_err(js_error)?;
     inspection_to_js(replay)
 }
 
 fn scan_replay(input: &[u8]) -> Result<JsValue, JsValue> {
-    let replay = d2_replay_anonymizer::scan(input).map_err(js_error)?;
+    let replay = d2_replay_anonymizer::scan_bytes(input).map_err(js_error)?;
     inspection_to_js(replay)
 }
 
@@ -90,14 +90,14 @@ pub fn load_replay_bytes(input: Vec<u8>) {
 }
 
 #[wasm_bindgen]
-pub fn inspect_loaded_replay() -> Result<JsValue, JsValue> {
+pub fn full_scan_loaded_replay() -> Result<JsValue, JsValue> {
     REPLAY.with(|replay| {
         let replay = replay.borrow();
         let input = replay
             .as_deref()
             .ok_or_else(|| JsValue::from_str("No replay loaded."))?;
 
-        inspect_replay(input)
+        full_scan_replay(input)
     })
 }
 
@@ -116,7 +116,7 @@ pub fn quick_scan_loaded_replay() -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub fn load_replay(input: Vec<u8>) -> Result<JsValue, JsValue> {
     load_replay_bytes(input);
-    let inspection = inspect_loaded_replay()?;
+    let inspection = full_scan_loaded_replay()?;
 
     Ok(inspection)
 }
