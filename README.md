@@ -305,8 +305,12 @@ Useful local checks:
 ```bash
 cargo fmt --all
 cargo test --workspace
+npm run lint
+npm run format:check
 npm run build
 ```
+
+Use `npm run format` to apply Prettier formatting to frontend files.
 
 `npm run build` includes `npm run build:wasm`, so it verifies that the Rust WASM bindings and the React app compile together.
 
