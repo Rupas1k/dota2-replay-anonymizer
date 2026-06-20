@@ -61,7 +61,6 @@ export type AnonymizeOptions = {
   remove_ward_cosmetics: boolean;
   remove_poogie_cosmetics: boolean;
   remove_statue_cosmetics: boolean;
-  remove_plus_subscriber: boolean;
   remove_guild_data: boolean;
   remove_player_camera_movements: boolean;
   remove_player_mouse_movements: boolean;

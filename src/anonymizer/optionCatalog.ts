@@ -83,7 +83,7 @@ export const optionGroups: OptionGroup[] = [
           {
             key: "removeDotaPlusBadges",
             title: "Dota Plus",
-            description: "Clear Dota Plus levels, icons, and badges.",
+            description: "Clear Dota Plus levels, icons, badges, and subscriber status.",
             inactiveDescription: "Keep Dota Plus profile details.",
           },
           {

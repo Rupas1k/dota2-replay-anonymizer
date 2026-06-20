@@ -471,7 +471,7 @@ impl ReplayAnonymizer {
         field = ends_with("m_bIsPlusSubscriber"),
     )]
     fn player_resource_plus_subscriber(&mut self, field_name: &str, value: bool) -> Option<bool> {
-        if !self.rules.remove_plus_subscriber() {
+        if !self.rules.remove_dota_plus_badges() {
             return None;
         }
 

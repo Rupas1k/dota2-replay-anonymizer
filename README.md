@@ -8,7 +8,7 @@ All processing runs locally. Use the browser app to review and export replays, o
 
 - Player identity: Steam IDs and player names.
 - Cosmetics: hero cosmetics, courier models, ward models, poogie models, and effigy statue wearables.
-- Profile details: Dota Plus levels, icons, and badges; guild ID, logo, colors, and tier.
+- Profile details: Dota Plus levels, icons, badges, and subscriber status; guild ID, logo, colors, and tier.
 - Input traces: camera movements, cursor movements, and clicks.
 - Communication: text chat, chat wheel lines, map pings, and minimap drawings.
 - Global identifiers: match ID, lobby name, league ID.
@@ -149,7 +149,6 @@ Reusable CLI/browser options:
   "remove_team_tag": true,
   "remove_tournament_team_id": true,
   "remove_team_logo": true,
-  "remove_plus_subscriber": true,
   "remove_broadcaster_info": true,
   "remove_combat_log": false,
   "remove_player_camera_movements": false,

@@ -46,7 +46,6 @@ const buildOptionSettings = (options: UiOptions): Omit<AnonymizeOptions, "player
     remove_ward_cosmetics: options.removeWardCosmetics,
     remove_poogie_cosmetics: options.removePoogieCosmetics,
     remove_statue_cosmetics: options.removeStatueCosmetics,
-    remove_plus_subscriber: options.removeDotaPlusBadges,
     remove_guild_data: options.removeGuildData,
     remove_player_camera_movements: options.removeCameraMovements,
     remove_player_mouse_movements: options.removeMouseMovements,

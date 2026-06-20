@@ -29,7 +29,6 @@ pub struct AnonymizeOptions {
     pub remove_ward_cosmetics: bool,
     pub remove_poogie_cosmetics: bool,
     pub remove_statue_cosmetics: bool,
-    pub remove_plus_subscriber: bool,
     pub remove_guild_data: bool,
     pub remove_player_camera_movements: bool,
     pub remove_player_mouse_movements: bool,
@@ -68,7 +67,6 @@ pub trait AnonymizeRules {
     fn remove_ward_cosmetics(&self) -> bool;
     fn remove_poogie_cosmetics(&self) -> bool;
     fn remove_statue_cosmetics(&self) -> bool;
-    fn remove_plus_subscriber(&self) -> bool;
     fn remove_guild_data(&self) -> bool;
     fn remove_player_camera_movements(&self) -> bool;
     fn remove_player_mouse_movements(&self) -> bool;
@@ -103,7 +101,6 @@ impl Default for AnonymizeOptions {
             remove_ward_cosmetics: true,
             remove_poogie_cosmetics: true,
             remove_statue_cosmetics: true,
-            remove_plus_subscriber: true,
             remove_guild_data: true,
             remove_player_camera_movements: false,
             remove_player_mouse_movements: false,
@@ -222,10 +219,6 @@ impl AnonymizeRules for AnonymizeOptions {
 
     fn remove_statue_cosmetics(&self) -> bool {
         self.remove_statue_cosmetics
-    }
-
-    fn remove_plus_subscriber(&self) -> bool {
-        self.remove_plus_subscriber
     }
 
     fn remove_guild_data(&self) -> bool {
