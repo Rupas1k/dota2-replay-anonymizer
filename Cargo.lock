@@ -86,7 +86,7 @@ dependencies = [
 
 [[package]]
 name = "d2-replay-anonymizer"
-version = "0.0.0"
+version = "0.0.2"
 dependencies = [
  "anyhow",
  "serde",
@@ -95,7 +95,7 @@ dependencies = [
 
 [[package]]
 name = "d2-replay-anonymizer-cli"
-version = "0.0.0"
+version = "0.0.2"
 dependencies = [
  "anyhow",
  "d2-replay-anonymizer",
@@ -104,7 +104,7 @@ dependencies = [
 
 [[package]]
 name = "d2-replay-anonymizer-wasm"
-version = "0.0.0"
+version = "0.0.2"
 dependencies = [
  "d2-replay-anonymizer",
  "js-sys",
