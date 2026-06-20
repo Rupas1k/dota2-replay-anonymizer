@@ -9,7 +9,9 @@ use std::{
 };
 
 use anyhow::{anyhow, bail, Context, Result};
-use d2_replay_anonymizer::{anonymize, scan, AnonymizeOptions, PlayerOption, PlayerSelectionMode};
+use d2_replay_anonymizer::{
+    anonymize, full_scan, scan, AnonymizeOptions, PlayerOption, PlayerSelectionMode,
+};
 
 const SOURCE_TV_STEAM_ID_THRESHOLD: u64 = 90000000000000000;
 
@@ -23,6 +25,7 @@ struct Args {
     options: Option<PathBuf>,
     output: PathBuf,
     jobs: usize,
+    full_scan: bool,
 }
 
 fn main() {
@@ -37,7 +40,7 @@ fn run() -> Result<()> {
     let options = read_options(args.options.as_deref())?;
     let jobs = build_jobs(&args.input, &args.output)?;
 
-    run_jobs(jobs, options, args.jobs)
+    run_jobs(jobs, options, args.jobs, args.full_scan)
 }
 
 fn read_options(path: Option<&Path>) -> Result<AnonymizeOptions> {
@@ -117,14 +120,19 @@ fn is_replay_file(path: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("dem"))
 }
 
-fn run_jobs(replay_jobs: Vec<ReplayJob>, options: AnonymizeOptions, jobs: usize) -> Result<()> {
+fn run_jobs(
+    replay_jobs: Vec<ReplayJob>,
+    options: AnonymizeOptions,
+    jobs: usize,
+    full_scan: bool,
+) -> Result<()> {
     if replay_jobs.is_empty() {
         return Ok(());
     }
 
     if jobs <= 1 || replay_jobs.len() == 1 {
         for job in replay_jobs {
-            run_job(job, &options)?;
+            run_job(job, &options, full_scan)?;
         }
 
         return Ok(());
@@ -149,7 +157,7 @@ fn run_jobs(replay_jobs: Vec<ReplayJob>, options: AnonymizeOptions, jobs: usize)
                     let mut errors = Vec::new();
 
                     for job in jobs {
-                        if let Err(error) = run_job(job, options) {
+                        if let Err(error) = run_job(job, options, full_scan) {
                             errors.push(error);
                         }
                     }
@@ -177,7 +185,7 @@ fn run_jobs(replay_jobs: Vec<ReplayJob>, options: AnonymizeOptions, jobs: usize)
     }
 }
 
-fn run_job(job: ReplayJob, options: &AnonymizeOptions) -> Result<()> {
+fn run_job(job: ReplayJob, options: &AnonymizeOptions, full_scan: bool) -> Result<()> {
     if let Some(parent) = job
         .output
         .parent()
@@ -188,7 +196,7 @@ fn run_job(job: ReplayJob, options: &AnonymizeOptions) -> Result<()> {
     }
 
     let mut options = options.clone();
-    add_steam_id_overrides(&job.input, &mut options)?;
+    add_steam_id_overrides(&job.input, &mut options, full_scan)?;
 
     let input = File::open(&job.input)
         .with_context(|| format!("failed to open {}", job.input.display()))?;
@@ -201,7 +209,11 @@ fn run_job(job: ReplayJob, options: &AnonymizeOptions) -> Result<()> {
     Ok(())
 }
 
-fn add_steam_id_overrides(input: &Path, options: &mut AnonymizeOptions) -> Result<()> {
+fn add_steam_id_overrides(
+    input: &Path,
+    options: &mut AnonymizeOptions,
+    full_scan_enabled: bool,
+) -> Result<()> {
     if options.player_selection_mode == PlayerSelectionMode::IncludeAll
         && options.include_steam_ids.is_empty()
         && options.exclude_steam_ids.is_empty()
@@ -209,11 +221,15 @@ fn add_steam_id_overrides(input: &Path, options: &mut AnonymizeOptions) -> Resul
         return Ok(());
     }
 
-    let replay =
-        scan(BufReader::new(File::open(input).with_context(|| {
-            format!("failed to open {}", input.display())
-        })?))
-        .with_context(|| format!("failed to scan {}", input.display()))?;
+    let replay_input = BufReader::new(
+        File::open(input).with_context(|| format!("failed to open {}", input.display()))?,
+    );
+    let replay = if full_scan_enabled {
+        full_scan(replay_input)
+    } else {
+        scan(replay_input)
+    }
+    .with_context(|| format!("failed to scan {}", input.display()))?;
     let players = replay
         .players
         .into_iter()
@@ -268,9 +284,15 @@ fn parse_args() -> Result<Args> {
     let mut positionals = Vec::new();
     let mut options = None;
     let mut jobs = 1;
+    let mut full_scan = false;
     let mut args = env::args_os().skip(1);
 
     while let Some(arg) = args.next() {
+        if arg == "--full-scan" {
+            full_scan = true;
+            continue;
+        }
+
         if arg == "--jobs" {
             let Some(value) = args.next() else {
                 bail!(usage());
@@ -312,6 +334,7 @@ fn parse_args() -> Result<Args> {
         options,
         output,
         jobs,
+        full_scan,
     })
 }
 
@@ -329,8 +352,8 @@ fn parse_jobs(value: &OsStr) -> Result<usize> {
 fn usage() -> String {
     [
         "Usage:",
-        "  d2ra <input.dem> <output.dem> [--options options.json] [--jobs N]",
-        "  d2ra <input_dir> <output_dir> [--options options.json] [--jobs N]",
+        "  d2ra <input.dem> <output.dem> [--options options.json] [--jobs N] [--full-scan]",
+        "  d2ra <input_dir> <output_dir> [--options options.json] [--jobs N] [--full-scan]",
     ]
     .join("\n")
 }

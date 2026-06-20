@@ -70,8 +70,8 @@ d2ra ./replays/raw ./replays/anonymized --options options.json --jobs 8
 When the input is a directory, the CLI recursively finds `.dem` files and mirrors the input directory structure under the output directory.
 
 ```text
-d2ra <input.dem> <output.dem> [--options options.json] [--jobs N]
-d2ra <input_dir> <output_dir> [--options options.json] [--jobs N]
+d2ra <input.dem> <output.dem> [--options options.json] [--jobs N] [--full-scan]
+d2ra <input_dir> <output_dir> [--options options.json] [--jobs N] [--full-scan]
 ```
 
 `--jobs` controls the number of worker threads used for directory processing. It must be greater than zero and defaults to `1`.
