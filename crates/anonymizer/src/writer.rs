@@ -3,19 +3,32 @@ use crate::player::{is_source_tv, STEAM_ID64_BASE};
 use source2_demo::prelude::*;
 use source2_demo::proto::*;
 use source2_demo::writer::*;
-use std::io::{Cursor, Read, Seek, Write};
+use std::{
+    io::{Cursor, Read, Seek, Write},
+    sync::LazyLock,
+};
 
 const ANONYMOUS_NAME: &str = "Anonymous";
 
 const PARTICLES_TO_DROP: u32 = 20;
 const EMPTY_HANDLE: u32 = 16777215;
 
-const WARD_MODEL: u64 = 6823511350490192210;
-const COURIER_RADIANT_MODEL: u64 = 9433937411225346325;
-const COURIER_RADIANT_FLYING_MODEL: u64 = 10757483865954873345;
-const COURIER_DIRE_MODEL: u64 = 12228188779730408636;
-const COURIER_DIRE_FLYING_MODEL: u64 = 4696866178566912019;
-const POOGIE_BASE_MODEL: u64 = 9842468807190508980;
+macro_rules! model {
+    ($model:ident, $path:literal) => {
+        static $model: LazyLock<u64> =
+            LazyLock::new(|| murmur2::murmur64b($path.as_bytes(), 0xEDABCDEF));
+    };
+}
+
+model!(DEFAULT_WARD, "models/props_gameplay/default_ward.vmdl");
+model!(POOGIE, "models/pets/poogie/poogie.vmdl");
+model!(DONKEY, "models/props_gameplay/donkey.vmdl");
+model!(DONKEY_WINGS, "models/props_gameplay/donkey_wings.vmdl");
+model!(DONKEY_DIRE, "models/props_gameplay/donkey_dire.vmdl");
+model!(
+    DONKEY_DIRE_WINGS,
+    "models/props_gameplay/donkey_dire_wings.vmdl"
+);
 
 const ENTITY_REWRITE_CLASSES: &[&str] = &[
     "CDOTA_PlayerResource",
@@ -77,10 +90,10 @@ impl DotaTeam {
 
     fn courier_model(self, is_flying: bool) -> u64 {
         match (self, is_flying) {
-            (Self::Radiant, false) => COURIER_RADIANT_MODEL,
-            (Self::Radiant, true) => COURIER_RADIANT_FLYING_MODEL,
-            (Self::Dire, false) => COURIER_DIRE_MODEL,
-            (Self::Dire, true) => COURIER_DIRE_FLYING_MODEL,
+            (Self::Radiant, false) => *DONKEY,
+            (Self::Radiant, true) => *DONKEY_WINGS,
+            (Self::Dire, false) => *DONKEY_DIRE,
+            (Self::Dire, true) => *DONKEY_DIRE_WINGS,
         }
     }
 }
@@ -645,7 +658,7 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        self.replace_if_changed(value, WARD_MODEL)
+        self.replace_if_changed(value, *DEFAULT_WARD)
     }
 
     #[rewrite_field(
@@ -721,7 +734,7 @@ impl ReplayAnonymizer {
             return None;
         }
 
-        self.replace_if_changed(value, POOGIE_BASE_MODEL)
+        self.replace_if_changed(value, *POOGIE)
     }
 
     #[rewrite_field(
