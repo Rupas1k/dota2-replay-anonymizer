@@ -91,7 +91,7 @@ const ensureReplayLoaded = (payload: WorkerRequest<"anonymize">["payload"]) => {
 const anonymizeLoadedReplay = (options: WorkerRequest<"anonymize">["payload"]["options"]) => {
   const output = anonymize_loaded_replay(JSON.stringify(options));
 
-  return new Blob([output], {
+  return new Blob([new Uint8Array(output)], {
     type: "application/octet-stream",
   });
 };

@@ -67,11 +67,15 @@ function normalizeProPlayer(player: OpenDotaProPlayerResponse): PlayerProfileLoo
     return null;
   }
 
+  const proName = stringValue(player.name);
+  const teamTag = stringValue(player.team_tag);
+  const teamName = stringValue(player.team_name);
+
   return {
     accountId,
-    proName: stringValue(player.name),
-    teamTag: stringValue(player.team_tag),
-    teamName: stringValue(player.team_name),
+    ...(proName === undefined ? {} : { proName }),
+    ...(teamTag === undefined ? {} : { teamTag }),
+    ...(teamName === undefined ? {} : { teamName }),
     isPro: true,
   };
 }
@@ -108,11 +112,15 @@ function profileFromStored(value: unknown): PlayerProfileLookup | null {
     return null;
   }
 
+  const proName = stringValue(profile.proName);
+  const teamTag = stringValue(profile.teamTag);
+  const teamName = stringValue(profile.teamName);
+
   return {
     accountId,
-    proName: stringValue(profile.proName),
-    teamTag: stringValue(profile.teamTag),
-    teamName: stringValue(profile.teamName),
+    ...(proName === undefined ? {} : { proName }),
+    ...(teamTag === undefined ? {} : { teamTag }),
+    ...(teamName === undefined ? {} : { teamName }),
     isPro: true,
   };
 }

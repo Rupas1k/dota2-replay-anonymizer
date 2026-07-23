@@ -15,7 +15,7 @@ const steamIdSet = (values: string[]) => new Set(values.map(normalizeSteamId).fi
 type PlayerRuleContext = {
   options: UiOptions;
   player: ReplayPlayer;
-  profile?: PlayerProfileLookup;
+  profile: PlayerProfileLookup | undefined;
   includeSteamIds?: Set<string>;
   excludeSteamIds?: Set<string>;
 };

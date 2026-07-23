@@ -13,7 +13,7 @@ import { defaultPlayerName, playerKey, steamIdText } from "../../utils";
 type PlayerCardProps = {
   hero: HeroDisplay;
   player: ReplayPlayer;
-  profile?: PlayerProfileLookup;
+  profile: PlayerProfileLookup | undefined;
   playerState: PlayerState;
   team: PlayerTeamKind;
   onUpdate: (key: string, patch: Partial<PlayerState>) => void;
