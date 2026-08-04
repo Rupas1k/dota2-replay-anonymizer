@@ -10,7 +10,7 @@ type ControlPanelProps = {
   canAnonymize: boolean;
   dragging: boolean;
   file: File | null;
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
   inspection: ReplayInspection | null;
   outputFileName: string;
   status: string;
@@ -50,7 +50,7 @@ export function ControlPanel({
   const visibleStatus = status.startsWith("Ready.") ? "" : status;
 
   return (
-    <aside className="control-panel">
+    <aside className="sticky top-5 grid gap-3.5 max-[980px]:static">
       <ReplayControls
         busy={busy}
         dragging={dragging}
@@ -81,7 +81,10 @@ export function ControlPanel({
       />
 
       {visibleStatus ? (
-        <p className={`status${busy ? " is-busy" : ""}`} role="status">
+        <p
+          className={`m-0 min-h-[22px] px-0.5 text-sm ${busy ? "text-accent-strong" : "text-muted-strong"}`}
+          role="status"
+        >
           {visibleStatus}
         </p>
       ) : null}

@@ -7,10 +7,10 @@ export default function App() {
   const replay = useReplayAnonymizer();
 
   return (
-    <main className="app-shell">
+    <main className="mx-auto min-h-screen w-full max-w-[1300px] px-[22px] pt-[18px] pb-6 max-[980px]:p-[18px] max-[720px]:p-3.5">
       <AppHeader />
 
-      <div className="workspace">
+      <div className="grid grid-cols-[minmax(270px,318px)_minmax(0,1fr)] items-start gap-5 max-[980px]:grid-cols-1">
         <ControlPanel
           activeTab={replay.activeTab}
           busy={replay.busy}

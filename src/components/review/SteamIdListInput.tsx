@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "../ui/Button";
 
 type SteamIdListInputProps = {
   label: string;
@@ -73,48 +74,60 @@ export function SteamIdListInput({ label, values, onChange }: SteamIdListInputPr
   };
 
   return (
-    <section className={`steam-id-list-field${editing ? " is-editing" : ""}`} aria-label={label}>
-      <div className="steam-id-list-head">
-        <div>
-          <strong>{label}</strong>
-          <span>{values.length ? countText : "No overrides"}</span>
+    <section
+      className={`flex min-w-0 flex-col rounded-lg border border-slate-700/45 bg-surface p-3 ${editing ? "gap-2.5" : "gap-2"}`}
+      aria-label={label}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-col items-start gap-2">
+          <strong className="overflow-hidden text-sm text-ellipsis whitespace-nowrap text-muted-strong">
+            {label}
+          </strong>
+          <span className="overflow-hidden text-xs text-ellipsis whitespace-nowrap text-muted">
+            {values.length ? countText : "No overrides"}
+          </span>
         </div>
-        <button type="button" onClick={startEditing}>
+        <button
+          className="shrink-0 cursor-pointer border-0 bg-transparent p-0 text-sm font-bold text-accent-strong hover:text-blue-200 focus-visible:outline-3 focus-visible:outline-blue-500/20"
+          type="button"
+          onClick={startEditing}
+        >
           {values.length ? "Edit" : "Add"}
         </button>
       </div>
 
       {!editing && values.length ? (
-        <p className="steam-id-preview">
+        <p className="m-0 overflow-hidden font-mono text-xs text-ellipsis whitespace-nowrap text-muted">
           {preview}
           {values.length > 2 ? `, +${values.length - 2} more` : ""}
         </p>
       ) : null}
 
       {editing ? (
-        <div className="steam-id-editor">
+        <div className="flex flex-col gap-2">
           <textarea
+            className="min-h-40 w-full resize-y rounded-lg border border-border bg-input px-2.5 py-2 font-mono text-sm text-app-text focus:border-accent focus:outline-3 focus:outline-blue-500/20"
             value={draft}
             rows={8}
             spellCheck={false}
             placeholder={"76561198000000000\n76561198000000001"}
             onChange={(event) => setDraft(event.target.value)}
           />
-          <div className="steam-id-editor-summary">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted [&>span:not(:first-child)]:text-warning">
             <span>{parsed.valid.length ? `${parsed.valid.length} ready` : "No valid IDs"}</span>
             {parsed.invalid.length ? <span>{invalidText}</span> : null}
             {parsed.duplicates ? <span>{duplicateText}</span> : null}
           </div>
-          <div className="steam-id-editor-actions">
-            <button type="button" onClick={() => setDraft("")}>
+          <div className="flex flex-wrap items-center justify-start gap-2">
+            <Button size="small" onClick={() => setDraft("")}>
               Clear
-            </button>
-            <button type="button" onClick={cancelEditing}>
+            </Button>
+            <Button size="small" onClick={cancelEditing}>
               Cancel
-            </button>
-            <button type="button" className="primary-action" onClick={applyChanges}>
+            </Button>
+            <Button size="small" variant="primary" onClick={applyChanges}>
               Apply
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

@@ -22,14 +22,18 @@ export function PlayersReview({
   onUpdate: (key: string, patch: Partial<PlayerState>) => void;
 }) {
   if (!players.length) {
-    return <div className="empty-inline">No players were found in this replay.</div>;
+    return (
+      <div className="rounded-lg border border-dashed border-border-strong bg-surface p-[18px] text-muted">
+        No players were found in this replay.
+      </div>
+    );
   }
 
   const groups = groupPlayers(players);
 
   return (
-    <section className="review-section players-review">
-      <div className="team-board">
+    <section className="grid gap-[18px]">
+      <div className="grid gap-2.5">
         <PlayerTeamSection
           players={groups.radiant}
           heroesById={heroesById}

@@ -1,10 +1,7 @@
-import type {
-  PlayerSelectionMode,
-  ProAnonymizeMode,
-  SpectatorAnonymizeMode,
-  UiOptions,
-} from "../../types";
-import { InfoTooltip } from "../InfoTooltip";
+import type { ReactNode } from "react";
+import type { UiOptions } from "../../types";
+import { InfoTooltip } from "../ui/InfoTooltip";
+import { SegmentedControl } from "../ui/SegmentedControl";
 import { SteamIdListInput } from "./SteamIdListInput";
 
 type PlayerRulesPanelProps = {
@@ -12,138 +9,97 @@ type PlayerRulesPanelProps = {
   onOptionsChange: (patch: Partial<UiOptions>) => void;
 };
 
+const defaultOptions = [
+  { value: "includeAll", label: "Anonymize all" },
+  { value: "excludeAll", label: "Keep all" },
+] as const;
+
+const proOptions = [
+  { value: "ignore", label: "No override" },
+  { value: "includePro", label: "Anonymize pros" },
+  { value: "excludePro", label: "Keep pros" },
+] as const;
+
+const spectatorOptions = [
+  { value: "ignore", label: "No override" },
+  { value: "includeSpectators", label: "Anonymize spectators" },
+  { value: "excludeSpectators", label: "Keep spectators" },
+] as const;
+
+function RuleRow({
+  label,
+  tooltip,
+  children,
+}: {
+  label: string;
+  tooltip?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[minmax(170px,220px)_minmax(0,1fr)] items-start gap-[18px] max-[980px]:grid-cols-1">
+      <span className="inline-flex items-center gap-[7px] pt-[9px] text-[0.95rem] font-bold text-muted-strong">
+        {label}
+        {tooltip ? <InfoTooltip text={tooltip} /> : null}
+      </span>
+      {children}
+    </div>
+  );
+}
+
 export function PlayerRulesPanel({ options, onOptionsChange }: PlayerRulesPanelProps) {
-  const setSelectionMode = (mode: PlayerSelectionMode) => {
-    onOptionsChange({ playerSelectionMode: mode });
-  };
-
-  const setProMode = (mode: ProAnonymizeMode) => {
-    onOptionsChange({ proAnonymizeMode: mode });
-  };
-
-  const setSpectatorMode = (mode: SpectatorAnonymizeMode) => {
-    onOptionsChange({ spectatorAnonymizeMode: mode });
-  };
-
-  const setIncludeSteamIds = (includeSteamIds: string[]) => {
-    const includeSet = new Set(includeSteamIds);
+  const updateSteamIds = (key: "includeSteamIds" | "excludeSteamIds", values: string[]) => {
+    const otherKey = key === "includeSteamIds" ? "excludeSteamIds" : "includeSteamIds";
+    const selected = new Set(values);
 
     onOptionsChange({
-      includeSteamIds,
-      excludeSteamIds: options.excludeSteamIds.filter((steamId) => !includeSet.has(steamId)),
-    });
-  };
-
-  const setExcludeSteamIds = (excludeSteamIds: string[]) => {
-    const excludeSet = new Set(excludeSteamIds);
-
-    onOptionsChange({
-      excludeSteamIds,
-      includeSteamIds: options.includeSteamIds.filter((steamId) => !excludeSet.has(steamId)),
+      [key]: values,
+      [otherKey]: options[otherKey].filter((steamId) => !selected.has(steamId)),
     });
   };
 
   return (
-    <div className="player-rule-panel">
-      <div className="player-rule-row">
-        <span className="rule-label">Default</span>
-        <div className="segmented-control" role="group" aria-label="Default player selection">
-          <button
-            type="button"
-            className={options.playerSelectionMode === "includeAll" ? "is-active" : ""}
-            onClick={() => setSelectionMode("includeAll")}
-          >
-            Anonymize all
-          </button>
-          <button
-            type="button"
-            className={options.playerSelectionMode === "excludeAll" ? "is-active" : ""}
-            onClick={() => setSelectionMode("excludeAll")}
-          >
-            Keep all
-          </button>
-        </div>
-      </div>
+    <div className="grid gap-3">
+      <RuleRow label="Default">
+        <SegmentedControl
+          ariaLabel="Default player selection"
+          options={defaultOptions}
+          value={options.playerSelectionMode}
+          onChange={(playerSelectionMode) => onOptionsChange({ playerSelectionMode })}
+        />
+      </RuleRow>
 
-      <div className="player-rule-row">
-        <span className="rule-label">
-          Pro players
-          <InfoTooltip text="Pro players list is taken from OpenDota" />
-        </span>
-        <div className="segmented-control is-three" role="group" aria-label="Pro player override">
-          <button
-            type="button"
-            className={options.proAnonymizeMode === "ignore" ? "is-active" : ""}
-            onClick={() => setProMode("ignore")}
-          >
-            No override
-          </button>
-          <button
-            type="button"
-            className={options.proAnonymizeMode === "includePro" ? "is-active" : ""}
-            onClick={() => setProMode("includePro")}
-          >
-            Anonymize pros
-          </button>
-          <button
-            type="button"
-            className={options.proAnonymizeMode === "excludePro" ? "is-active" : ""}
-            onClick={() => setProMode("excludePro")}
-          >
-            Keep pros
-          </button>
-        </div>
-      </div>
+      <RuleRow label="Pro players" tooltip="Pro players list is taken from OpenDota">
+        <SegmentedControl
+          ariaLabel="Pro player override"
+          options={proOptions}
+          value={options.proAnonymizeMode}
+          onChange={(proAnonymizeMode) => onOptionsChange({ proAnonymizeMode })}
+        />
+      </RuleRow>
 
-      <div className="player-rule-row">
-        <span className="rule-label">
-          Spectators
-          <InfoTooltip text="Full scan may be needed to get full spectator list" />
-        </span>
-        <div
-          className="segmented-control is-three"
-          role="group"
-          aria-label="Spectator player override"
-        >
-          <button
-            type="button"
-            className={options.spectatorAnonymizeMode === "ignore" ? "is-active" : ""}
-            onClick={() => setSpectatorMode("ignore")}
-          >
-            No override
-          </button>
-          <button
-            type="button"
-            className={options.spectatorAnonymizeMode === "includeSpectators" ? "is-active" : ""}
-            onClick={() => setSpectatorMode("includeSpectators")}
-          >
-            Anonymize spectators
-          </button>
-          <button
-            type="button"
-            className={options.spectatorAnonymizeMode === "excludeSpectators" ? "is-active" : ""}
-            onClick={() => setSpectatorMode("excludeSpectators")}
-          >
-            Keep spectators
-          </button>
-        </div>
-      </div>
+      <RuleRow label="Spectators" tooltip="Full scan may be needed to get full spectator list">
+        <SegmentedControl
+          ariaLabel="Spectator player override"
+          options={spectatorOptions}
+          value={options.spectatorAnonymizeMode}
+          onChange={(spectatorAnonymizeMode) => onOptionsChange({ spectatorAnonymizeMode })}
+        />
+      </RuleRow>
 
-      <div className="player-rule-row">
-        <span className="rule-label">Steam IDs</span>
-        <div className="steam-id-rule-grid">
+      <RuleRow label="Steam IDs">
+        <div className="grid grid-cols-2 gap-2.5 max-[980px]:grid-cols-1">
           <SteamIdListInput
             label="Always anonymize players"
             values={options.includeSteamIds}
-            onChange={setIncludeSteamIds}
+            onChange={(values) => updateSteamIds("includeSteamIds", values)}
           />
           <SteamIdListInput
             label="Never anonymize players"
             values={options.excludeSteamIds}
-            onChange={setExcludeSteamIds}
+            onChange={(values) => updateSteamIds("excludeSteamIds", values)}
           />
         </div>
-      </div>
+      </RuleRow>
     </div>
   );
 }

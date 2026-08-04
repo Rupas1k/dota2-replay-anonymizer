@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^25.9.3",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
@@ -30,6 +31,7 @@
     "eslint-config-prettier": "^10.1.8",
     "jiti": "^2.7.0",
     "prettier": "^3.8.4",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.61.1",
     "vite": "^8.1.5"

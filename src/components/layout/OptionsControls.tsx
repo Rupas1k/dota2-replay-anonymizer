@@ -1,4 +1,6 @@
 import type { ReplayInspection, ReviewTab } from "../../types";
+import { Button } from "../ui/Button";
+import { PanelSection, SectionHeading } from "../ui/Panel";
 
 type OptionsControlsProps = {
   activeTab: ReviewTab;
@@ -22,17 +24,10 @@ export function OptionsControls({
       : "Edit options";
 
   return (
-    <section className="panel-section options-panel">
-      <div className="section-heading">
-        <span className="step-badge">2</span>
-        <div>
-          <h2>Options</h2>
-          <p>Manage anonymizer settings.</p>
-        </div>
-      </div>
-      <button
-        type="button"
-        className="secondary-action wide"
+    <PanelSection>
+      <SectionHeading step={2} title="Options" description="Manage anonymizer settings." />
+      <Button
+        className="w-full"
         disabled={!inspection}
         onClick={() => {
           if (inspection) {
@@ -41,17 +36,25 @@ export function OptionsControls({
         }}
       >
         {optionsButtonText}
-      </button>
-      <div className="utility-actions">
-        <div>
-          <button type="button" onClick={onRestoreDefaultOptions}>
+      </Button>
+      <div className="flex flex-col">
+        <div className="flex gap-2">
+          <Button
+            className="min-w-0 flex-1 text-[0.82rem]"
+            size="small"
+            onClick={onRestoreDefaultOptions}
+          >
             Restore
-          </button>
-          <button type="button" onClick={onExportOptionsJson}>
+          </Button>
+          <Button
+            className="min-w-0 flex-1 text-[0.82rem]"
+            size="small"
+            onClick={onExportOptionsJson}
+          >
             Export JSON
-          </button>
+          </Button>
         </div>
       </div>
-    </section>
+    </PanelSection>
   );
 }

@@ -10,6 +10,7 @@ import type {
   UiOptionKey,
   UiOptions,
 } from "../../types";
+import { Panel } from "../ui/Panel";
 
 type ReviewPanelProps = {
   activeTab: ReviewTab;
@@ -35,7 +36,7 @@ export function ReviewPanel({
   onUpdatePlayer,
 }: ReviewPanelProps) {
   return (
-    <section className="review-panel">
+    <Panel className="min-h-[650px] px-[18px] pt-[18px] pb-5 max-[980px]:min-h-[520px] max-[720px]:p-3.5">
       {activeTab === "options" || !inspection ? (
         <OptionsReview
           options={options}
@@ -51,6 +52,6 @@ export function ReviewPanel({
           onUpdate={onUpdatePlayer}
         />
       )}
-    </section>
+    </Panel>
   );
 }

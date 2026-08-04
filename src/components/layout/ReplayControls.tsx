@@ -1,11 +1,13 @@
 import type { ChangeEvent, DragEvent, RefObject } from "react";
 import { formatBytes } from "../../utils";
+import { Button } from "../ui/Button";
+import { PanelSection, SectionHeading } from "../ui/Panel";
 
 type ReplayControlsProps = {
   busy: boolean;
   dragging: boolean;
   file: File | null;
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
   onDragLeave: () => void;
   onDragOver: (event: DragEvent<HTMLLabelElement>) => void;
   onDrop: (event: DragEvent<HTMLLabelElement>) => void;
@@ -25,24 +27,20 @@ export function ReplayControls({
   onRunFullScan,
 }: ReplayControlsProps) {
   return (
-    <section className="panel-section">
-      <div className="section-heading">
-        <span className="step-badge">1</span>
-        <div>
-          <h2>Replay</h2>
-          <p>Load a `.dem` file.</p>
-        </div>
-      </div>
+    <PanelSection>
+      <SectionHeading step={1} title="Replay" description="Load a `.dem` file." />
 
       <label
-        className={`upload-zone${dragging ? " is-dragging" : ""}`}
+        className={`grid min-h-[116px] cursor-pointer content-center gap-1 rounded-lg border border-dashed p-[18px] transition-colors ${dragging ? "border-accent bg-[#122334]" : "border-[#526575] bg-input hover:border-accent hover:bg-[#122334] focus-within:border-accent focus-within:bg-[#122334]"}`}
         htmlFor="file"
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
-        <span className="upload-title">{file ? file.name : "Drop replay here or browse"}</span>
-        <span className="upload-meta">
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-app-text">
+          {file ? file.name : "Drop replay here or browse"}
+        </span>
+        <span className="m-0 text-sm text-muted">
           {file ? formatBytes(file.size) : "Accepts Dota 2 `.dem` replay files"}
         </span>
         <input
@@ -54,14 +52,9 @@ export function ReplayControls({
           onChange={onFileChange}
         />
       </label>
-      <button
-        type="button"
-        className="secondary-action wide"
-        disabled={!file || busy}
-        onClick={onRunFullScan}
-      >
+      <Button className="w-full" disabled={!file || busy} onClick={onRunFullScan}>
         Full scan
-      </button>
-    </section>
+      </Button>
+    </PanelSection>
   );
 }
