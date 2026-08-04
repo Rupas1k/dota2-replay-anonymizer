@@ -1,11 +1,7 @@
 import js from "@eslint/js";
 import { defineConfig } from "eslint/config";
 import prettier from "eslint-config-prettier";
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import tseslint from "typescript-eslint";
-
-const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(
   {
@@ -27,7 +23,6 @@ export default defineConfig(
         projectService: {
           allowDefaultProject: ["eslint.config.ts", "vite.config.ts"],
         },
-        tsconfigRootDir,
       },
     },
     rules: {
