@@ -1,24 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-app-bg: #0d1217;
-  --color-surface: #111820;
-  --color-app-text: #edf3f6;
-  --color-muted: #93a4b0;
-  --color-muted-strong: #bdc8d0;
-  --color-accent: #66a8e8;
-  --color-accent-strong: #9dccf7;
-  --color-border: #273542;
-  --color-border-strong: #3e5364;
-  --color-input: #0c1218;
-  --color-warning: #e5b66b;
+  --color-app-bg: #0d1117;
+  --color-surface: #151b23;
+  --color-app-text: #f0f6fc;
+  --color-muted: #9198a1;
+  --color-muted-strong: #d1d9e0;
+  --color-accent: #4493f8;
+  --color-border: #3d444d;
+  --color-border-strong: #656c76;
+  --color-input: #0d1117;
+  --color-control: #212830;
+  --color-control-hover: #262c36;
+  --color-success: #238636;
+  --color-success-hover: #29903b;
+  --color-warning: #d29922;
 }
 
 @layer base {
   :root {
     color-scheme: dark;
     font-family:
-      Inter,
       ui-sans-serif,
       system-ui,
       -apple-system,
@@ -31,7 +33,19 @@
     min-height: 100vh;
     background: var(--color-app-bg);
     color: var(--color-app-text);
+    font-size: 14px;
     line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  * {
+    scrollbar-color: var(--color-border-strong) transparent;
+    scrollbar-width: thin;
+  }
+
+  ::selection {
+    color: var(--color-app-text);
+    background: #4493f840;
   }
 
   button,
@@ -41,6 +55,11 @@
   }
 
   input[type="file"] {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }

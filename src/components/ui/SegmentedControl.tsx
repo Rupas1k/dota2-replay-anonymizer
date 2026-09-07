@@ -18,7 +18,7 @@ export function SegmentedControl<T extends string>({
 }: SegmentedControlProps<T>) {
   return (
     <div
-      className={`grid gap-1 rounded-lg bg-input p-[3px] ${options.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}
+      className={`grid gap-1 rounded-sm bg-input p-[5px] ${options.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}
       role="group"
       aria-label={ariaLabel}
     >
@@ -29,10 +29,10 @@ export function SegmentedControl<T extends string>({
           <button
             key={option.value}
             type="button"
-            className={`min-h-9 min-w-0 cursor-pointer rounded-lg border px-3 py-[7px] font-bold transition-colors focus-visible:border-accent focus-visible:outline-3 focus-visible:outline-blue-500/20 ${
+            className={`min-h-9 min-w-0 cursor-pointer rounded-sm px-[9px] py-[7px] text-sm leading-snug font-medium transition-colors focus-visible:outline-2 focus-visible:outline-accent/70 ${
               selected
-                ? "border-accent/55 bg-[#142538] text-accent-strong shadow-[inset_0_0_0_1px_rgba(102,168,232,0.08)] hover:border-accent/70 hover:bg-[#182d43]"
-                : "border-transparent bg-transparent text-muted-strong hover:border-border-strong hover:bg-surface"
+                ? "bg-control text-app-text hover:bg-control-hover"
+                : "bg-transparent text-muted hover:bg-white/4 hover:text-app-text"
             }`}
             aria-pressed={selected}
             onClick={() => onChange(option.value)}
