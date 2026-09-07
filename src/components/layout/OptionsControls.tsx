@@ -25,7 +25,7 @@ export function OptionsControls({
 
   return (
     <PanelSection>
-      <SectionHeading step={2} title="Options" description="Manage anonymizer settings." />
+      <SectionHeading title="Options" />
       <Button
         className="w-full"
         disabled={!inspection}

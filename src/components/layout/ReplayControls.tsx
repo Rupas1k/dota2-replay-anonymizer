@@ -28,20 +28,20 @@ export function ReplayControls({
 }: ReplayControlsProps) {
   return (
     <PanelSection>
-      <SectionHeading step={1} title="Replay" description="Load a `.dem` file." />
+      <SectionHeading title="Replay" />
 
       <label
-        className={`grid min-h-[116px] cursor-pointer content-center gap-1 rounded-lg border border-dashed p-[18px] transition-colors ${dragging ? "border-accent bg-[#122334]" : "border-[#526575] bg-input hover:border-accent hover:bg-[#122334] focus-within:border-accent focus-within:bg-[#122334]"}`}
+        className={`grid min-h-[116px] cursor-pointer content-center gap-1 rounded-sm border border-dashed p-[18px] transition-colors ${dragging ? "border-success bg-success/10" : "border-border-strong bg-input hover:border-muted hover:bg-control has-[:focus-visible]:border-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent/70"}`}
         htmlFor="file"
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
-        <span className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-app-text">
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-app-text">
           {file ? file.name : "Drop replay here or browse"}
         </span>
         <span className="m-0 text-sm text-muted">
-          {file ? formatBytes(file.size) : "Accepts Dota 2 `.dem` replay files"}
+          {file ? formatBytes(file.size) : "Accepts Dota 2 .dem replay files"}
         </span>
         <input
           ref={fileInputRef}

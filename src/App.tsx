@@ -1,5 +1,5 @@
-import { AppHeader } from "./components/layout/AppHeader";
 import { ControlPanel } from "./components/layout/ControlPanel";
+import { GithubLink } from "./components/layout/GithubLink";
 import { ReviewPanel } from "./components/layout/ReviewPanel";
 import { useReplayAnonymizer } from "./hooks/useReplayAnonymizer";
 
@@ -7,9 +7,7 @@ export default function App() {
   const replay = useReplayAnonymizer();
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-[1300px] px-[22px] pt-[18px] pb-6 max-[980px]:p-[18px] max-[720px]:p-3.5">
-      <AppHeader />
-
+    <main className="mx-auto min-h-screen w-full max-w-[1300px] px-[22px] pt-[18px] pb-14 max-[980px]:px-[18px] max-[980px]:pt-[18px] max-[720px]:px-3.5 max-[720px]:pt-3.5">
       <div className="grid grid-cols-[minmax(270px,318px)_minmax(0,1fr)] items-start gap-5 max-[980px]:grid-cols-1">
         <ControlPanel
           activeTab={replay.activeTab}
@@ -45,6 +43,8 @@ export default function App() {
           onUpdatePlayer={replay.updatePlayer}
         />
       </div>
+
+      <GithubLink />
     </main>
   );
 }

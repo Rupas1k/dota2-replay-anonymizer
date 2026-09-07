@@ -36,7 +36,7 @@ export function ReviewPanel({
   onUpdatePlayer,
 }: ReviewPanelProps) {
   return (
-    <Panel className="min-h-[650px] px-[18px] pt-[18px] pb-5 max-[980px]:min-h-[520px] max-[720px]:p-3.5">
+    <Panel className="min-h-[650px] p-4 pb-5 max-[980px]:min-h-[520px] max-[720px]:p-3.5">
       {activeTab === "options" || !inspection ? (
         <OptionsReview
           options={options}
