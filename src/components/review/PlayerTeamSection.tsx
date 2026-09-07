@@ -32,18 +32,10 @@ export function PlayerTeamSection({
     return null;
   }
 
-  const teamTitle = team === "radiant" ? "text-[#8fd0ac]" : team === "dire" ? "text-[#df8f87]" : "";
-  const divider =
-    team === "radiant"
-      ? "after:bg-[linear-gradient(90deg,rgba(143,208,172,0.58),rgba(55,73,87,0.28))]"
-      : team === "dire"
-        ? "after:bg-[linear-gradient(90deg,rgba(223,143,135,0.58),rgba(55,73,87,0.28))]"
-        : "after:bg-[rgba(55,73,87,0.42)]";
-
   return (
     <section className="grid gap-[7px]">
-      <header className={`flex items-center gap-2.5 after:h-px after:flex-1 ${divider}`}>
-        <h3 className={`m-0 text-[0.92rem] tracking-normal ${teamTitle}`}>{title}</h3>
+      <header className="flex items-center gap-2.5 after:h-px after:flex-1 after:bg-border">
+        <h3 className="m-0 text-[0.92rem] tracking-normal text-muted-strong">{title}</h3>
       </header>
 
       <div

@@ -27,17 +27,21 @@ const spectatorOptions = [
 ] as const;
 
 function RuleRow({
+  alignTop,
   label,
   tooltip,
   children,
 }: {
+  alignTop?: boolean;
   label: string;
   tooltip?: string;
   children: ReactNode;
 }) {
   return (
     <div className="grid grid-cols-[minmax(170px,220px)_minmax(0,1fr)] items-start gap-[18px] max-[980px]:grid-cols-1">
-      <span className="inline-flex items-center gap-[7px] pt-[9px] text-[0.95rem] font-bold text-muted-strong">
+      <span
+        className={`inline-flex items-center gap-[7px] font-medium text-muted-strong ${alignTop ? "h-7 text-sm" : "pt-[9px] text-[0.95rem]"}`}
+      >
         {label}
         {tooltip ? <InfoTooltip text={tooltip} /> : null}
       </span>
@@ -86,15 +90,15 @@ export function PlayerRulesPanel({ options, onOptionsChange }: PlayerRulesPanelP
         />
       </RuleRow>
 
-      <RuleRow label="Steam IDs">
-        <div className="grid grid-cols-2 gap-2.5 max-[980px]:grid-cols-1">
+      <RuleRow alignTop label="Steam IDs">
+        <div className="grid grid-cols-2 items-start gap-3 has-[textarea]:grid-cols-1 max-[980px]:grid-cols-1">
           <SteamIdListInput
-            label="Always anonymize players"
+            label="Always anonymize"
             values={options.includeSteamIds}
             onChange={(values) => updateSteamIds("includeSteamIds", values)}
           />
           <SteamIdListInput
-            label="Never anonymize players"
+            label="Never anonymize"
             values={options.excludeSteamIds}
             onChange={(values) => updateSteamIds("excludeSteamIds", values)}
           />

@@ -23,7 +23,7 @@ export function PlayersReview({
 }) {
   if (!players.length) {
     return (
-      <div className="rounded-lg border border-dashed border-border-strong bg-surface p-[18px] text-muted">
+      <div className="rounded-sm border border-dashed border-border-strong bg-surface p-[18px] text-muted">
         No players were found in this replay.
       </div>
     );

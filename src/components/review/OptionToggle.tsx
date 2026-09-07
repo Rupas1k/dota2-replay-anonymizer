@@ -16,7 +16,7 @@ export function OptionToggle({ option, options, onOptionChange }: OptionTogglePr
 
   return (
     <label
-      className={`group relative grid min-h-[92px] cursor-pointer grid-cols-[minmax(0,1fr)_44px] items-start gap-3.5 rounded-lg border px-[13px] py-3 transition-colors hover:border-accent/30 ${checked ? "border-accent/40 bg-blue-950/25" : "border-slate-700/45 bg-surface"}`}
+      className={`group relative grid min-h-[92px] cursor-pointer grid-cols-[minmax(0,1fr)_44px] items-start gap-3.5 rounded-sm border px-[13px] py-3 transition-colors hover:border-border min-[721px]:[&_[role=tooltip]]:right-0 min-[721px]:[&_[role=tooltip]]:left-auto min-[721px]:[&_[role=tooltip]]:translate-x-0 ${checked ? "border-transparent bg-control" : "border-transparent bg-transparent"}`}
     >
       <input
         className="peer absolute size-px overflow-hidden whitespace-nowrap [clip-path:inset(50%)] [clip:rect(0_0_0_0)]"
@@ -31,18 +31,18 @@ export function OptionToggle({ option, options, onOptionChange }: OptionTogglePr
       <span className="min-w-0">
         <span className="flex items-start justify-between gap-2">
           <span className="flex items-center gap-1.5">
-            <strong className="block text-[0.88rem]">{option.title}</strong>
+            <strong className="block text-sm font-medium">{option.title}</strong>
             {option.tooltip && <InfoTooltip text={option.tooltip} />}
           </span>
         </span>
         <small className="mt-[3px] block text-sm leading-snug text-muted">{description}</small>
       </span>
       <span
-        className={`relative col-start-2 row-start-1 mt-px h-6 w-[42px] rounded-full border transition-colors peer-focus-visible:outline-3 peer-focus-visible:outline-blue-500/20 peer-focus-visible:outline-offset-2 ${checked ? "border-accent/70 bg-accent/20" : "border-slate-600 bg-input"}`}
+        className={`relative col-start-2 row-start-1 mt-px h-6 w-[42px] rounded-full border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-accent/70 peer-focus-visible:outline-offset-2 ${checked ? "border-success bg-success" : "border-border-strong bg-input"}`}
         aria-hidden="true"
       >
         <span
-          className={`absolute top-[3px] left-[3px] size-4 rounded-full transition-[transform,background] ${checked ? "translate-x-[18px] bg-accent-strong" : "bg-slate-400"}`}
+          className={`absolute top-[3px] left-[3px] size-4 rounded-full transition-[transform,background] ${checked ? "translate-x-[18px] bg-white" : "bg-muted"}`}
         />
       </span>
     </label>

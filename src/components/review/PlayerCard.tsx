@@ -34,7 +34,7 @@ function SteamLink({ player }: { player: ReplayPlayer }) {
 
   if (!url) {
     return (
-      <span className="inline-flex min-w-0 max-w-full justify-self-start rounded-full border border-slate-700/45 bg-input px-[7px] py-1 text-xs text-[#718190]">
+      <span className="inline-flex min-w-0 max-w-full justify-self-start rounded-sm border border-border bg-input px-[7px] py-1 text-xs text-muted">
         Steam {steamId}
       </span>
     );
@@ -42,7 +42,7 @@ function SteamLink({ player }: { player: ReplayPlayer }) {
 
   return (
     <a
-      className="inline-flex min-w-0 max-w-full items-center justify-self-start gap-1.5 rounded-full border border-slate-700/45 bg-input px-[7px] py-1 text-xs text-muted no-underline transition-colors hover:border-accent/35 hover:bg-accent/10 hover:text-accent-strong [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:fill-none [&_svg]:stroke-current [&_svg]:stroke-[1.7] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap"
+      className="inline-flex min-w-0 max-w-full items-center justify-self-start gap-1.5 rounded-sm border border-border bg-input px-[7px] py-1 text-xs text-muted no-underline transition-colors hover:border-border-strong hover:bg-control hover:text-app-text [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:fill-none [&_svg]:stroke-current [&_svg]:stroke-[1.7] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap"
       href={url}
       target="_blank"
       rel="noreferrer"
@@ -69,16 +69,10 @@ export function PlayerCard({
   const playerName = defaultPlayerName(player);
   const proLabel = proPlayerLabel(profile);
   const cardClassName = [
-    "grid min-h-[66px] items-center gap-2 rounded-lg border px-[9px] py-[7px] focus-visible:outline-3 focus-visible:outline-[rgba(102,168,232,0.18)] focus-visible:outline-offset-2 max-[720px]:grid-cols-1",
-    team === "neutral"
-      ? "grid-cols-[20px_minmax(0,1fr)] border-slate-700/45 bg-surface"
-      : team === "radiant"
-        ? "grid-cols-[20px_104px_minmax(0,1fr)] border-[rgba(71,100,84,0.52)] bg-[#0f181b]"
-        : "grid-cols-[20px_104px_minmax(0,1fr)] border-[rgba(103,73,72,0.54)] bg-[#11171a]",
-    proLabel
-      ? "border-[rgba(229,182,107,0.36)] shadow-[inset_0_0_0_1px_rgba(229,182,107,0.06)]"
-      : "",
-    playerState.locked ? "cursor-default" : "cursor-pointer hover:border-[rgba(102,168,232,0.3)]",
+    "grid min-h-[66px] items-center gap-2 rounded-sm border px-[9px] py-[7px] focus-visible:outline-2 focus-visible:outline-accent/70 focus-visible:outline-offset-2 max-[720px]:grid-cols-1",
+    team === "neutral" ? "grid-cols-[20px_minmax(0,1fr)]" : "grid-cols-[20px_104px_minmax(0,1fr)]",
+    playerState.anonymize ? "border-success/50 bg-success/10" : "border-border bg-surface",
+    playerState.locked ? "cursor-default" : "cursor-pointer hover:border-border-strong",
   ]
     .filter(Boolean)
     .join(" ");
@@ -128,7 +122,7 @@ export function PlayerCard({
         aria-label={`Anonymize ${playerName}`}
       >
         <input
-          className="size-4 cursor-pointer accent-[#66a8e8] disabled:cursor-not-allowed disabled:opacity-55"
+          className="size-4 cursor-pointer accent-success disabled:cursor-not-allowed disabled:opacity-55"
           type="checkbox"
           checked={playerState.anonymize}
           disabled={playerState.locked}
@@ -138,7 +132,7 @@ export function PlayerCard({
 
       {team !== "neutral" ? (
         <div
-          className="grid aspect-video w-24 place-items-end overflow-hidden rounded-lg border border-white/11 bg-surface shadow-[inset_0_-34px_42px_rgba(0,0,0,0.34)] max-[720px]:min-h-[92px] max-[720px]:w-full [&_img]:size-full [&_img]:object-cover"
+          className="grid aspect-video w-24 place-items-end overflow-hidden rounded-sm border border-border bg-surface max-[720px]:min-h-[92px] max-[720px]:w-full [&_img]:size-full [&_img]:object-cover"
           aria-hidden="true"
         >
           {heroImageUrl(hero) ? (
@@ -151,14 +145,14 @@ export function PlayerCard({
         className={`min-w-0 gap-[5px] ${team === "neutral" ? "flex items-center justify-between pr-5" : "grid grid-cols-[minmax(240px,1fr)_minmax(132px,0.42fr)] items-center max-[720px]:grid-cols-1"}`}
       >
         <div className="min-w-0">
-          <div className="grid min-w-0 gap-0.5 [&>span:last-child]:overflow-hidden [&>span:last-child]:text-[0.78rem] [&>span:last-child]:text-ellipsis [&>span:last-child]:whitespace-nowrap [&>span:last-child]:text-[#93a4b0]">
+          <div className="grid min-w-0 gap-0.5 [&>span:last-child]:overflow-hidden [&>span:last-child]:text-[0.78rem] [&>span:last-child]:text-ellipsis [&>span:last-child]:whitespace-nowrap [&>span:last-child]:text-muted">
             {proLabel ? (
-              <span className="overflow-hidden text-[0.9rem] font-[760] text-ellipsis whitespace-nowrap text-[#e5b66b] [&_em]:font-[620] [&_em]:not-italic [&_em]:text-[#bdc8d0]">
+              <span className="overflow-hidden text-[0.9rem] font-medium text-ellipsis whitespace-nowrap text-warning [&_em]:font-normal [&_em]:not-italic [&_em]:text-muted">
                 {proLabel}
                 {!proNameMatchesReplayName ? <em> aka {playerName}</em> : null}
               </span>
             ) : (
-              <span className="overflow-hidden text-[0.9rem] font-[760] text-ellipsis whitespace-nowrap text-[#edf3f6]">
+              <span className="overflow-hidden text-[0.9rem] font-medium text-ellipsis whitespace-nowrap text-app-text">
                 {playerName}
               </span>
             )}
